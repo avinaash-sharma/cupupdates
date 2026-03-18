@@ -27,9 +27,9 @@ export const saveBookmarks = async (bookmarks: Article[]): Promise<void> => {
 export const getSettings = async (): Promise<AppSettings> => {
   try {
     const data = await AsyncStorage.getItem(KEYS.SETTINGS);
-    return data ? (JSON.parse(data) as AppSettings) : { darkMode: false };
+    return data ? (JSON.parse(data) as AppSettings) : { darkMode: true };
   } catch {
-    return { darkMode: false };
+    return { darkMode: true };
   }
 };
 

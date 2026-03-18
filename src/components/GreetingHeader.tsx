@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../context/ThemeContext';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { getGreeting } from '../utils/greeting';
 
 interface GreetingHeaderProps {
@@ -8,22 +7,15 @@ interface GreetingHeaderProps {
 }
 
 export const GreetingHeader: React.FC<GreetingHeaderProps> = ({ userName }) => {
-  const { colors } = useTheme();
-
   return (
-    <View style={[styles.container, { backgroundColor: colors.headerBg }]}>
-      <View style={styles.left}>
-        <Text style={[styles.greeting, { color: colors.text }]}>
-          {getGreeting(userName)}
-        </Text>
-        <Text style={[styles.subtitle, { color: colors.subtext }]}>
-          Today's top stories
-        </Text>
-      </View>
+    <View style={styles.container}>
+      <Text style={styles.greeting} numberOfLines={1}>
+        {getGreeting(userName)}
+      </Text>
 
-      {/* Minimal logo mark */}
-      <View style={[styles.mark, { borderColor: colors.border }]}>
-        <Text style={styles.markEmoji}>☕</Text>
+      {/* Circular avatar mark */}
+      <View style={styles.avatar}>
+        <Text style={styles.avatarEmoji}>☕</Text>
       </View>
     </View>
   );
@@ -34,32 +26,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 11,
-  },
-  left: {
-    gap: 2,
+    paddingHorizontal: 20,
+    paddingVertical: 13,
   },
   greeting: {
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  subtitle: {
-    fontSize: 11,
-    fontWeight: '400',
+    fontSize: 22,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    color: '#ffffff',
     letterSpacing: 0.1,
-    opacity: 0.6,
+    flex: 1,
+    marginRight: 12,
   },
-  mark: {
-    width: 32,
-    height: 32,
-    borderRadius: 9,
-    borderWidth: StyleSheet.hairlineWidth,
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.25)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  markEmoji: {
-    fontSize: 17,
+  avatarEmoji: {
+    fontSize: 18,
   },
 });

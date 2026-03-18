@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler'; // must be first import
 import React, { useState, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -71,7 +71,7 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={DarkTheme}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <MainTabs />
     </NavigationContainer>

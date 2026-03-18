@@ -21,7 +21,7 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.row}
-      style={{ backgroundColor: colors.headerBg }}
+      style={{ backgroundColor: colors.headerBg, flexShrink: 0, maxHeight: 60 }}
     >
       {categories.map((cat) => {
         const active = cat === selected;
@@ -58,18 +58,18 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
 const styles = StyleSheet.create({
   row: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    gap: 6,
   },
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   chipText: {
-    fontSize: 12,
+    fontSize: 13,
     letterSpacing: 0.2,
   },
 });

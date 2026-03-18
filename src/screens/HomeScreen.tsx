@@ -1,11 +1,10 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Article, DEFAULT_CATEGORY } from '../types';
 import { useNews } from '../hooks/useNews';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useSettings } from '../hooks/useSettings';
-import { useTheme } from '../context/ThemeContext';
 import { SwipeDeck } from '../components/SwipeDeck';
 import { NewsCard } from '../components/NewsCard';
 import { CategoryChips } from '../components/CategoryChips';
@@ -18,14 +17,13 @@ const INTERSTITIAL_INTERVAL = 5;
 export const HomeScreen: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>(DEFAULT_CATEGORY);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [swipeCount, setSwipeCount] = useState(0);
+  const swipeCountRef = useRef(0);
   const [showInterstitial, setShowInterstitial] = useState(false);
 
   const { selectedCategories, userName, prefsLoaded } = useSettings();
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
-  // ── Data source: per-category fetch for specific tabs, all-selected for "All" ──
+  // ── Per-category fetch: specific tab → fetch only that; All → fetch all selected ──
   const categoriesToFetch = useMemo(() => {
     if (!prefsLoaded) return [];
     if (activeCategory === DEFAULT_CATEGORY) return selectedCategories;
@@ -37,43 +35,35 @@ export const HomeScreen: React.FC = () => {
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
 
-  // ── Chips: All + user's selected categories ──
   const chipCategories = useMemo(
     () => [DEFAULT_CATEGORY, ...selectedCategories],
     [selectedCategories],
   );
 
-  // ── Category change: reset index + new fetch is triggered via categoriesToFetch ──
   const handleCategoryChange = useCallback((cat: string) => {
     setActiveCategory(cat);
     setCurrentIndex(0);
   }, []);
 
-  // ── Swipe forward (up) ──
   const handleSwipe = useCallback(() => {
     setCurrentIndex((prev) => {
       const next = prev + 1;
       return next < articles.length ? next : prev;
     });
-    setSwipeCount((prev) => {
-      const next = prev + 1;
-      if (next % INTERSTITIAL_INTERVAL === 0) setShowInterstitial(true);
-      return next;
-    });
+    swipeCountRef.current += 1;
+    if (swipeCountRef.current % INTERSTITIAL_INTERVAL === 0) setShowInterstitial(true);
   }, [articles.length]);
 
-  // ── Swipe back (down) ──
   const handleSwipeBack = useCallback(() => {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
   }, []);
 
-  // ── Pull-to-refresh (swipe down at index 0) ──
   const handleRefresh = useCallback(() => {
     setCurrentIndex(0);
     refresh();
   }, [refresh]);
 
-  // ── Trigger loadMore when approaching the end ──
+  // ── Trigger loadMore near the end ──
   const prevIndexRef = useRef(-1);
   if (currentIndex !== prevIndexRef.current) {
     prevIndexRef.current = currentIndex;
@@ -97,9 +87,22 @@ export const HomeScreen: React.FC = () => {
   const showDeck = !showSpinner && articles.length > 0;
   const showEmpty = !showSpinner && articles.length === 0;
 
+  const currentArticle = articles[currentIndex];
+
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={StyleSheet.absoluteFill}>
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      {/* ── Header ── */}
+      <GreetingHeader userName={userName} />
+      <CategoryChips
+        categories={chipCategories}
+        selected={activeCategory}
+        onSelect={handleCategoryChange}
+      />
+
+      {/* ── Card container — rounds and clips the SwipeDeck ── */}
+      <View style={styles.cardContainer}>
+        {/* Explicit bg layer — workaround for iOS overflow:hidden+borderRadius bg bug */}
+        <View style={[StyleSheet.absoluteFill, styles.cardBg]} pointerEvents="none" />
         {showDeck && (
           <SwipeDeck
             articles={articles}
@@ -111,33 +114,30 @@ export const HomeScreen: React.FC = () => {
           />
         )}
         {showSpinner && (
-          <View style={[styles.centered, { backgroundColor: colors.background }]}>
-            <ActivityIndicator size="large" color="#4f46e5" />
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color="rgba(255,255,255,0.7)" />
           </View>
         )}
         {showEmpty && (
-          <View style={[styles.centered, { backgroundColor: colors.background }]}>
+          <View style={styles.centered}>
             <EmptyState isError={isError} onRetry={refresh} />
           </View>
         )}
       </View>
 
-      <View
-        style={[
-          styles.headerBox,
-          {
-            paddingTop: insets.top,
-            backgroundColor: colors.headerBg,
-            borderBottomColor: colors.border,
-          },
-        ]}
-      >
-        <GreetingHeader userName={userName} />
-        <CategoryChips
-          categories={chipCategories}
-          selected={activeCategory}
-          onSelect={handleCategoryChange}
-        />
+      {/* ── Bottom controls — outside card ── */}
+      <View style={[styles.bottomControls, { paddingBottom: insets.bottom + 8 }]}>
+        <View style={styles.swipeHint}>
+          <Text style={styles.swipeArrow}>↑</Text>
+          <Text style={styles.swipeLabel}>SWIPE UP</Text>
+        </View>
+
+        <Pressable
+          style={({ pressed }) => [styles.readBtn, pressed && styles.readBtnPressed]}
+          onPress={() => { if (currentArticle?.url) Linking.openURL(currentArticle.url); }}
+        >
+          <Text style={styles.readBtnText}>Read Full Story  →</Text>
+        </Pressable>
       </View>
 
       <InterstitialAd visible={showInterstitial} onClose={() => setShowInterstitial(false)} />
@@ -146,7 +146,63 @@ export const HomeScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  headerBox: { borderBottomWidth: StyleSheet.hairlineWidth },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  root: {
+    flex: 1,
+    backgroundColor: '#080808',
+  },
+  cardBg: {
+    backgroundColor: '#111',
+  },
+  cardContainer: {
+    flex: 1,
+    marginHorizontal: 18,
+    marginVertical: 8,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden',
+    backgroundColor: '#111',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#111',
+  },
+  bottomControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: 14,
+  },
+  swipeHint: {
+    alignItems: 'center',
+    gap: 3,
+  },
+  swipeArrow: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 16,
+  },
+  swipeLabel: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+  },
+  readBtn: {
+    paddingHorizontal: 22,
+    paddingVertical: 13,
+    borderRadius: 28,
+    backgroundColor: 'rgba(245,245,245,0.92)',
+  },
+  readBtnPressed: {
+    backgroundColor: 'rgba(245,245,245,0.7)',
+    transform: [{ scale: 0.97 }],
+  },
+  readBtnText: {
+    color: '#111111',
+    fontSize: 15,
+    fontWeight: '600',
+  },
 });

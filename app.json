@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "CupUpdates",
+    "slug": "cupupdates",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cupupdates.app"
+    },
+    "android": {
+      "package": "com.cupupdates.app"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bcbaec35-1827-4d6e-8639-11676241fc1b"
+      }
+    }
+  }
+}

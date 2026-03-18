@@ -5,13 +5,23 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": ["**/*"],
+    "splash": {
+      "backgroundColor": "#1a1a2e"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cupupdates.app"
     },
     "android": {
-      "package": "com.cupupdates.app"
+      "package": "com.cupupdates.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#1a1a2e"
+      }
     },
+    "plugins": [
+      "react-native-reanimated"
+    ],
     "extra": {
       "eas": {
         "projectId": "bcbaec35-1827-4d6e-8639-11676241fc1b"

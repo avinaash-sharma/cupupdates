@@ -19,12 +19,14 @@ const Tab = createBottomTabNavigator();
 
 // RestartContext is defined in src/context/RestartContext.ts to avoid circular deps.
 
-const ACTIVE_COLOR   = '#ffffff';
-const INACTIVE_COLOR = 'rgba(255,255,255,0.38)';
-const ICON_SIZE      = 24;
+const ICON_SIZE = 24;
 
 const MainTabs: React.FC = () => {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+
+  const activeColor   = isDark ? '#ffffff' : '#4f46e5';
+  const inactiveColor = isDark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.35)';
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -36,8 +38,8 @@ const MainTabs: React.FC = () => {
           paddingBottom: 8,
           paddingTop: 6,
         },
-        tabBarActiveTintColor: ACTIVE_COLOR,
-        tabBarInactiveTintColor: INACTIVE_COLOR,
+        tabBarActiveTintColor: activeColor,
+        tabBarInactiveTintColor: inactiveColor,
         tabBarLabelStyle: { fontSize: 10, fontWeight: '600', letterSpacing: 0.3 },
       }}
     >
@@ -49,7 +51,7 @@ const MainTabs: React.FC = () => {
             <Ionicons
               name={focused ? 'home' : 'home-outline'}
               size={ICON_SIZE}
-              color={focused ? ACTIVE_COLOR : INACTIVE_COLOR}
+              color={focused ? activeColor : inactiveColor}
             />
           ),
         }}
@@ -62,7 +64,7 @@ const MainTabs: React.FC = () => {
             <Ionicons
               name={focused ? 'bookmark' : 'bookmark-outline'}
               size={ICON_SIZE}
-              color={focused ? ACTIVE_COLOR : INACTIVE_COLOR}
+              color={focused ? activeColor : inactiveColor}
             />
           ),
         }}
@@ -75,7 +77,7 @@ const MainTabs: React.FC = () => {
             <Ionicons
               name={focused ? 'settings' : 'settings-outline'}
               size={ICON_SIZE}
-              color={focused ? ACTIVE_COLOR : INACTIVE_COLOR}
+              color={focused ? activeColor : inactiveColor}
             />
           ),
         }}

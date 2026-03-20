@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Pressable,
   StyleSheet,
   Platform,
+  Share,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +26,18 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
 }) => {
   const [imgError, setImgError] = useState(false);
   const showImage = !!article.imageUrl && !imgError;
+
+  const handleShare = useCallback(async () => {
+    try {
+      await Share.share({
+        title: article.title,
+        message: Platform.OS === 'ios' ? article.title : `${article.title}\n\n${article.url}`,
+        url: article.url,          // iOS only
+      });
+    } catch {
+      // user dismissed or share unavailable — silent fail
+    }
+  }, [article.title, article.url]);
 
   return (
     <View style={StyleSheet.absoluteFill}>
@@ -56,18 +69,28 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
         pointerEvents="none"
       />
 
-      {/* Bookmark — top right */}
-      <Pressable
-        style={({ pressed }) => [styles.bookmarkBtn, pressed && styles.bookmarkBtnPressed]}
-        onPress={onToggleBookmark}
-        hitSlop={10}
-      >
-        <Ionicons
-          name={isBookmarked ? 'heart' : 'heart-outline'}
-          size={20}
-          color={isBookmarked ? '#ff3b5c' : 'rgba(255,255,255,0.88)'}
-        />
-      </Pressable>
+      {/* Action buttons — vertical stack, top right */}
+      <View style={styles.actions}>
+        <Pressable
+          style={({ pressed }) => [styles.actionBtn, pressed && styles.actionBtnPressed]}
+          onPress={onToggleBookmark}
+          hitSlop={10}
+        >
+          <Ionicons
+            name={isBookmarked ? 'heart' : 'heart-outline'}
+            size={20}
+            color={isBookmarked ? '#ff3b5c' : 'rgba(255,255,255,0.88)'}
+          />
+        </Pressable>
+
+        <Pressable
+          style={({ pressed }) => [styles.actionBtn, pressed && styles.actionBtnPressed]}
+          onPress={handleShare}
+          hitSlop={10}
+        >
+          <Ionicons name="share-outline" size={20} color="rgba(255,255,255,0.88)" />
+        </Pressable>
+      </View>
 
       {/* Content — anchored to bottom, sits in the dark zone */}
       <View style={styles.content}>
@@ -97,10 +120,14 @@ const styles = StyleSheet.create({
     right: 0,
     height: '62%',
   },
-  bookmarkBtn: {
+  actions: {
     position: 'absolute',
     top: 14,
     right: 14,
+    gap: 10,
+    alignItems: 'center',
+  },
+  actionBtn: {
     width: 38,
     height: 38,
     borderRadius: 19,
@@ -110,7 +137,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  bookmarkBtnPressed: {
+  actionBtnPressed: {
     backgroundColor: 'rgba(255,255,255,0.15)',
     transform: [{ scale: 0.9 }],
   },

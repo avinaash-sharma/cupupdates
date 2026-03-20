@@ -30,26 +30,27 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
       {/* Base shimmer — always present */}
       <ShimmerBackground />
 
-      {/* Full-bleed image */}
+      {/* Image — top 62% only, no aggressive zoom */}
       {showImage && (
         <Image
           source={{ uri: article.imageUrl }}
-          style={[StyleSheet.absoluteFill, styles.image]}
+          style={styles.image}
           resizeMode="cover"
           onError={() => setImgError(true)}
         />
       )}
 
-      {/* Gradient: image visible at top, fades to dark from ~32% down */}
+      {/* Gradient: fully clear at top, smooth fade into dark text zone */}
       <LinearGradient
         colors={[
           'transparent',
           'transparent',
-          'rgba(10,10,10,0.75)',
-          'rgba(10,10,10,0.97)',
-          '#0a0a0a',
+          'rgba(8,8,8,0.45)',
+          'rgba(8,8,8,0.88)',
+          'rgba(8,8,8,0.98)',
+          '#080808',
         ]}
-        locations={[0, 0.20, 0.45, 0.65, 0.80]}
+        locations={[0, 0.32, 0.50, 0.62, 0.72, 0.82]}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
@@ -65,7 +66,7 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
         </Text>
       </Pressable>
 
-      {/* Content — anchored to bottom */}
+      {/* Content — anchored to bottom, sits in the dark zone */}
       <View style={styles.content}>
         <View style={styles.categoryPill}>
           <Text style={styles.categoryText}>{article.category.toUpperCase()}</Text>
@@ -75,7 +76,7 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
           {article.title}
         </Text>
 
-        <Text style={styles.summary} numberOfLines={3}>
+        <Text style={styles.summary} numberOfLines={2}>
           {article.summary}
         </Text>
       </View>
@@ -87,16 +88,22 @@ export const NewsCard = memo(NewsCardInner);
 
 const styles = StyleSheet.create({
   image: {
-    transform: [{ scale: 1.05 }],
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '62%',
   },
   bookmarkBtn: {
     position: 'absolute',
     top: 14,
     right: 14,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(0,0,0,0.40)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -106,7 +113,7 @@ const styles = StyleSheet.create({
   },
   bookmarkIcon: {
     fontSize: 17,
-    color: 'rgba(255,255,255,0.85)',
+    color: 'rgba(255,255,255,0.9)',
   },
   bookmarkIconSaved: {
     color: '#ff3b5c',
@@ -117,32 +124,34 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: 22,
-    paddingBottom: 24,
+    paddingBottom: 28,
+    paddingTop: 16,
   },
   categoryPill: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    marginBottom: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: 'rgba(79,70,229,0.80)',
+    marginBottom: 12,
   },
   categoryText: {
-    color: 'rgba(255,255,255,0.85)',
+    color: '#ffffff',
     fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 1.4,
+    letterSpacing: 1.2,
   },
   title: {
     color: '#ffffff',
-    fontSize: 28,
+    fontSize: 24,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    lineHeight: 35,
+    lineHeight: 32,
     marginBottom: 10,
   },
   summary: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 14,
-    lineHeight: 21,
+    color: 'rgba(255,255,255,0.52)',
+    fontSize: 13,
+    lineHeight: 20,
+    letterSpacing: 0.1,
   },
 });

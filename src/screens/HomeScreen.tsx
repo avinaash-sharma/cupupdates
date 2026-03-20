@@ -20,7 +20,7 @@ export const HomeScreen: React.FC = () => {
   const swipeCountRef = useRef(0);
   const [showInterstitial, setShowInterstitial] = useState(false);
 
-  const { selectedCategories, userName, prefsLoaded } = useSettings();
+  const { selectedCategories, userName, prefsLoaded, language } = useSettings();
   const insets = useSafeAreaInsets();
 
   // ── Per-category fetch: specific tab → fetch only that; All → fetch all selected ──
@@ -31,7 +31,7 @@ export const HomeScreen: React.FC = () => {
   }, [prefsLoaded, activeCategory, selectedCategories]);
 
   const { articles, isLoading, isLoadingMore, isError, refresh, loadMore } =
-    useNews(categoriesToFetch);
+    useNews(categoriesToFetch, language);
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
 

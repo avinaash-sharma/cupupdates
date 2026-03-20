@@ -13,15 +13,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettings } from '../hooks/useSettings';
 import { useTheme } from '../context/ThemeContext';
 import { CategorySelector } from '../components/CategorySelector';
+import { SUPPORTED_LANGUAGES } from '../types';
+import { useRestart } from '../../App';
 
 const APP_VERSION = '1.0.0';
 const MIN_CATEGORIES = 3;
 
 export const SettingsScreen: React.FC = () => {
-  const { userName, setUserName, isDark, toggleDark, selectedCategories, updateCategories } =
-    useSettings();
+  const {
+    userName, setUserName,
+    isDark, toggleDark,
+    selectedCategories, updateCategories,
+    language, updateLanguage,
+  } = useSettings();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const restartApp = useRestart();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
 
@@ -42,6 +49,17 @@ export const SettingsScreen: React.FC = () => {
 
   const handleCategoryChange = (cats: string[]) => {
     updateCategories(cats);
+  };
+
+  const handleLanguageChange = async (lang: string) => {
+    if (lang === language) return;
+    await updateLanguage(lang);
+    Alert.alert(
+      'Language Changed',
+      'The app needs to restart to apply the new language.',
+      [{ text: 'Restart Now', onPress: restartApp }],
+      { cancelable: false },
+    );
   };
 
   return (
@@ -104,6 +122,45 @@ export const SettingsScreen: React.FC = () => {
               onChange={handleCategoryChange}
               min={MIN_CATEGORIES}
             />
+          </View>
+        </View>
+
+        {/* Language */}
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>LANGUAGE</Text>
+          <Text style={[styles.sectionHint, { color: colors.subtext }]}>
+            Changing language restarts the app to fetch news in the selected language.
+          </Text>
+          <View style={styles.languageList}>
+            {SUPPORTED_LANGUAGES.map((lang, idx) => {
+              const isSelected = language === lang.code;
+              const isLast = idx === SUPPORTED_LANGUAGES.length - 1;
+              return (
+                <TouchableOpacity
+                  key={lang.code}
+                  style={[
+                    styles.languageRow,
+                    { borderBottomColor: colors.border },
+                    isLast && { borderBottomWidth: 0 },
+                  ]}
+                  onPress={() => handleLanguageChange(lang.code)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.rowLeft}>
+                    <Text style={styles.rowIcon}>{lang.flag}</Text>
+                    <View>
+                      <Text style={[styles.rowLabel, { color: colors.text }]}>{lang.label}</Text>
+                      {lang.nativeLabel !== lang.label && (
+                        <Text style={[styles.languageNative, { color: colors.subtext }]}>
+                          {lang.nativeLabel}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  {isSelected && <Text style={styles.languageCheck}>✓</Text>}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
@@ -217,4 +274,24 @@ const styles = StyleSheet.create({
   saveBtnText: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
   cancelBtn: { paddingHorizontal: 4 },
   cancelBtnText: { fontSize: 14 },
+  languageList: {
+    paddingBottom: 4,
+  },
+  languageRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  languageNative: {
+    fontSize: 12,
+    marginTop: 1,
+  },
+  languageCheck: {
+    fontSize: 17,
+    color: '#4f46e5',
+    fontWeight: '700',
+  },
 });

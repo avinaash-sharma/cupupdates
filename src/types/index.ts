@@ -32,8 +32,16 @@ export interface UserPreferences {
   name: string;
   selectedCategories: string[];
   hasOnboarded: boolean;
+  language?: string;
 }
 
 export interface AppSettings {
   darkMode: boolean;
 }
+
+export const SUPPORTED_LANGUAGES = [
+  { code: 'en', label: 'English', nativeLabel: 'English', flag: '🇬🇧' },
+  { code: 'hi', label: 'Hindi', nativeLabel: 'हिंदी', flag: '🇮🇳' },
+] as const;
+
+export type LanguageCode = 'en' | 'hi';

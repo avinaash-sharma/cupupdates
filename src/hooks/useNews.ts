@@ -11,7 +11,7 @@ export interface UseNewsResult {
   loadMore: () => void;
 }
 
-export const useNews = (selectedCategories: string[]): UseNewsResult => {
+export const useNews = (selectedCategories: string[], language = 'en'): UseNewsResult => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [nextPage, setNextPage] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(true);
@@ -20,8 +20,8 @@ export const useNews = (selectedCategories: string[]): UseNewsResult => {
   const abortRef = useRef<AbortController | null>(null);
 
   const catsKey = useMemo(
-    () => selectedCategories.slice().sort().join(','),
-    [selectedCategories],
+    () => selectedCategories.slice().sort().join(',') + ':' + language,
+    [selectedCategories, language],
   );
 
   const load = useCallback(async () => {
@@ -41,6 +41,7 @@ export const useNews = (selectedCategories: string[]): UseNewsResult => {
         selectedCategories,
         undefined,
         ctrl.signal,
+        language,
       );
 
       if (!ctrl.signal.aborted) {
@@ -67,6 +68,8 @@ export const useNews = (selectedCategories: string[]): UseNewsResult => {
       const { articles: more, nextPage: np } = await fetchNews(
         selectedCategories,
         nextPage,
+        undefined,
+        language,
       );
 
       setArticles((prev) => {

@@ -69,11 +69,6 @@ function toAppCategory(cats: string[] | null): Category {
 }
 
 function transform(raw: RawArticle): Article | null {
-  // Accept 'en', 'english', or missing — API param already filters language
-  if (raw.language && !raw.language.startsWith('en')) {
-    console.log(`[NewsAPI] filtered (language="${raw.language}"):`, raw.title);
-    return null;
-  }
   if (!raw.title) {
     console.log('[NewsAPI] filtered (no title):', raw.article_id);
     return null;
@@ -108,10 +103,11 @@ export async function fetchNews(
   categories: string[],
   page?: string,
   signal?: AbortSignal,
+  language = 'en',
 ): Promise<FetchNewsResult> {
   const params = new URLSearchParams({
     apikey: NEWS_API_KEY,
-    language: 'en',
+    language,
     size: '10',
     image: '1'
   });

@@ -8,6 +8,7 @@ const DEFAULT_CATEGORIES = SUPPORTED_CATEGORIES.slice(0, 5) as unknown as string
 export const useSettings = () => {
   const [userName, setUserNameState] = useState('');
   const [selectedCategories, setSelectedCategoriesState] = useState<string[]>([]);
+  const [language, setLanguageState] = useState('en');
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const { isDark, toggleDark } = useTheme();
 
@@ -19,6 +20,7 @@ export const useSettings = () => {
         console.log('[Settings] loaded categories:', cats);
         setUserNameState(prefs.name);
         setSelectedCategoriesState(cats);
+        setLanguageState(prefs.language ?? 'en');
       } else {
         console.log('[Settings] no preferences found, using defaults:', DEFAULT_CATEGORIES);
       }
@@ -33,6 +35,7 @@ export const useSettings = () => {
       name,
       selectedCategories: existing?.selectedCategories ?? DEFAULT_CATEGORIES,
       hasOnboarded: existing?.hasOnboarded ?? true,
+      language: existing?.language ?? 'en',
     });
   }, []);
 
@@ -43,8 +46,25 @@ export const useSettings = () => {
       name: existing?.name ?? '',
       selectedCategories: cats,
       hasOnboarded: true,
+      language: existing?.language ?? 'en',
     });
   }, []);
 
-  return { userName, setUserName, selectedCategories, updateCategories, prefsLoaded, isDark, toggleDark };
+  const updateLanguage = useCallback(async (lang: string) => {
+    setLanguageState(lang);
+    const existing = await getUserPreferences();
+    await saveUserPreferences({
+      name: existing?.name ?? '',
+      selectedCategories: existing?.selectedCategories ?? DEFAULT_CATEGORIES,
+      hasOnboarded: true,
+      language: lang,
+    });
+  }, []);
+
+  return {
+    userName, setUserName,
+    selectedCategories, updateCategories,
+    language, updateLanguage,
+    prefsLoaded, isDark, toggleDark,
+  };
 };

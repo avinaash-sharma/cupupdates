@@ -12,6 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { saveUserPreferences } from '../utils/storage';
 import { CategorySelector } from '../components/CategorySelector';
+import { SUPPORTED_LANGUAGES } from '../types';
 
 const MIN_CATEGORIES = 5;
 
@@ -20,9 +21,10 @@ interface OnboardingScreenProps {
 }
 
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const handleNameContinue = () => {
@@ -35,21 +37,48 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
     setStep(2);
   };
 
+  const handleLanguageContinue = () => {
+    setStep(3);
+  };
+
   const handleCategoriesContinue = async () => {
     if (selectedCategories.length < MIN_CATEGORIES) return;
     await saveUserPreferences({
       name: name.trim(),
       selectedCategories,
       hasOnboarded: true,
+      language: selectedLanguage,
     });
     onComplete();
   };
 
   const canContinue = selectedCategories.length >= MIN_CATEGORIES;
 
-  return (
-    <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.gradient}>
-      {step === 1 ? (
+  const StepIndicator = () => (
+    <View style={styles.steps}>
+      {/* Step 1 */}
+      <View style={[styles.stepDot, step === 1 ? styles.stepDotActive : styles.stepDotDone]}>
+        {step > 1 && <Text style={styles.stepDotDoneText}>✓</Text>}
+      </View>
+      <View style={[styles.stepLine, step > 1 && styles.stepLineDone]} />
+      {/* Step 2 */}
+      <View
+        style={[
+          styles.stepDot,
+          step === 2 ? styles.stepDotActive : step > 2 ? styles.stepDotDone : undefined,
+        ]}
+      >
+        {step > 2 && <Text style={styles.stepDotDoneText}>✓</Text>}
+      </View>
+      <View style={[styles.stepLine, step > 2 && styles.stepLineDone]} />
+      {/* Step 3 */}
+      <View style={[styles.stepDot, step === 3 ? styles.stepDotActive : undefined]} />
+    </View>
+  );
+
+  if (step === 1) {
+    return (
+      <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.gradient}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.inner}
@@ -61,14 +90,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
             <Text style={styles.tagline}>Your daily news, brewed fresh</Text>
           </View>
 
-          {/* Step indicator */}
-          <View style={styles.steps}>
-            <View style={[styles.stepDot, styles.stepDotActive]} />
-            <View style={styles.stepLine} />
-            <View style={styles.stepDot} />
-          </View>
+          <StepIndicator />
 
-          {/* Form */}
           <View style={styles.form}>
             <Text style={styles.question}>{"What's your name?"}</Text>
             <Text style={styles.hint}>{"We'll use this to personalise your experience."}</Text>
@@ -97,46 +120,92 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
           <Text style={styles.footer}>Stay informed. Stay ahead.</Text>
         </KeyboardAvoidingView>
-      ) : (
-        <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
-          {/* Step indicator */}
-          <View style={styles.steps}>
-            <View style={[styles.stepDot, styles.stepDotDone]}>
-              <Text style={styles.stepDotDoneText}>✓</Text>
-            </View>
-            <View style={[styles.stepLine, styles.stepLineDone]} />
-            <View style={[styles.stepDot, styles.stepDotActive]} />
-          </View>
+      </LinearGradient>
+    );
+  }
+
+  if (step === 2) {
+    return (
+      <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.gradient}>
+        <View style={styles.inner}>
+          <StepIndicator />
 
           <View style={styles.form}>
-            <Text style={styles.question}>Pick your topics</Text>
-            <Text style={styles.hint}>
-              Select at least {MIN_CATEGORIES} categories.{' '}
-              <Text style={styles.hintCount}>
-                {selectedCategories.length}/{MIN_CATEGORIES} selected
-              </Text>
+            <Text style={styles.question}>Choose your language</Text>
+            <Text style={styles.hint}>News will be fetched in your chosen language.</Text>
+
+            <View style={styles.languageList}>
+              {SUPPORTED_LANGUAGES.map((lang) => {
+                const isSelected = selectedLanguage === lang.code;
+                return (
+                  <TouchableOpacity
+                    key={lang.code}
+                    style={[styles.languageCard, isSelected && styles.languageCardSelected]}
+                    onPress={() => setSelectedLanguage(lang.code)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.languageFlag}>{lang.flag}</Text>
+                    <View style={styles.languageLabels}>
+                      <Text style={[styles.languageLabel, isSelected && styles.languageLabelSelected]}>
+                        {lang.label}
+                      </Text>
+                      {lang.nativeLabel !== lang.label && (
+                        <Text style={styles.languageNative}>{lang.nativeLabel}</Text>
+                      )}
+                    </View>
+                    {isSelected && <Text style={styles.languageCheck}>✓</Text>}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <Text style={styles.settingsHint}>
+              💡 This can be changed later in Settings.
             </Text>
 
-            <CategorySelector
-              selected={selectedCategories}
-              onChange={setSelectedCategories}
-              min={0}           // allow free toggle; we enforce min at "Continue"
-              max={6}
-              dark
-            />
-
-            <TouchableOpacity
-              style={[styles.btn, !canContinue && styles.btnDisabled]}
-              onPress={handleCategoriesContinue}
-              activeOpacity={canContinue ? 0.82 : 1}
-            >
-              <Text style={styles.btnText}>
-                {canContinue ? "Let's Go →" : `Select ${MIN_CATEGORIES - selectedCategories.length} more`}
-              </Text>
+            <TouchableOpacity style={styles.btn} onPress={handleLanguageContinue} activeOpacity={0.82}>
+              <Text style={styles.btnText}>Continue →</Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      )}
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  // Step 3 — Categories
+  return (
+    <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.gradient}>
+      <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
+        <StepIndicator />
+
+        <View style={styles.form}>
+          <Text style={styles.question}>Pick your topics</Text>
+          <Text style={styles.hint}>
+            Select at least {MIN_CATEGORIES} categories.{' '}
+            <Text style={styles.hintCount}>
+              {selectedCategories.length}/{MIN_CATEGORIES} selected
+            </Text>
+          </Text>
+
+          <CategorySelector
+            selected={selectedCategories}
+            onChange={setSelectedCategories}
+            min={0}
+            max={6}
+            dark
+          />
+
+          <TouchableOpacity
+            style={[styles.btn, !canContinue && styles.btnDisabled]}
+            onPress={handleCategoriesContinue}
+            activeOpacity={canContinue ? 0.82 : 1}
+          >
+            <Text style={styles.btnText}>
+              {canContinue ? "Let's Go →" : `Select ${MIN_CATEGORIES - selectedCategories.length} more`}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </LinearGradient>
   );
 };
@@ -185,7 +254,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   stepLine: {
-    width: 48,
+    width: 40,
     height: 1,
     backgroundColor: 'rgba(255,255,255,0.15)',
   },
@@ -218,4 +287,54 @@ const styles = StyleSheet.create({
   btnDisabled: { opacity: 0.38 },
   btnText: { color: '#ffffff', fontSize: 18, fontWeight: '700' },
   footer: { color: 'rgba(255,255,255,0.38)', textAlign: 'center', fontSize: 14 },
+  // Language selection
+  languageList: {
+    gap: 12,
+    marginTop: 4,
+  },
+  languageCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    gap: 14,
+  },
+  languageCardSelected: {
+    borderColor: '#4f46e5',
+    backgroundColor: 'rgba(79,70,229,0.18)',
+  },
+  languageFlag: {
+    fontSize: 28,
+  },
+  languageLabels: {
+    flex: 1,
+  },
+  languageLabel: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.75)',
+  },
+  languageLabelSelected: {
+    color: '#ffffff',
+  },
+  languageNative: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.45)',
+    marginTop: 2,
+  },
+  languageCheck: {
+    fontSize: 18,
+    color: '#4f46e5',
+    fontWeight: '700',
+  },
+  settingsHint: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.42)',
+    textAlign: 'center',
+    marginTop: 4,
+  },
 });

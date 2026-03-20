@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler'; // must be first import
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
@@ -15,6 +15,12 @@ import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { getUserPreferences } from './src/utils/storage';
 
 const Tab = createBottomTabNavigator();
+
+// ── Restart context ───────────────────────────────────────────────────────────
+// Calling restartApp() forces the entire React tree to remount, which re-reads
+// AsyncStorage so any persisted changes (e.g. language) take effect immediately.
+export const RestartContext = createContext<() => void>(() => {});
+export const useRestart = () => useContext(RestartContext);
 
 const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => (
   <Text style={{ fontSize: focused ? 24 : 21, opacity: focused ? 1 : 0.45 }}>{icon}</Text>
@@ -79,13 +85,18 @@ const AppContent: React.FC = () => {
 };
 
 export default function App() {
+  const [appKey, setAppKey] = useState(0);
+  const restartApp = useCallback(() => setAppKey((k) => k + 1), []);
+
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <AppContent />
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <RestartContext.Provider value={restartApp}>
+      <GestureHandlerRootView key={appKey} style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <AppContent />
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </RestartContext.Provider>
   );
 }

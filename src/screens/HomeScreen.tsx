@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator, Linking } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Article, DEFAULT_CATEGORY } from '../types';
 import { useNews } from '../hooks/useNews';
@@ -128,7 +129,7 @@ export const HomeScreen: React.FC = () => {
       {/* ── Bottom controls — outside card ── */}
       <View style={[styles.bottomControls, { paddingBottom: insets.bottom + 8 }]}>
         <View style={styles.swipeHint}>
-          <Text style={styles.swipeArrow}>↑</Text>
+          <Ionicons name="arrow-up" size={16} color="rgba(255,255,255,0.45)" />
           <Text style={styles.swipeLabel}>SWIPE UP</Text>
         </View>
 
@@ -136,7 +137,8 @@ export const HomeScreen: React.FC = () => {
           style={({ pressed }) => [styles.readBtn, pressed && styles.readBtnPressed]}
           onPress={() => { if (currentArticle?.url) Linking.openURL(currentArticle.url); }}
         >
-          <Text style={styles.readBtnText}>Read Full Story  →</Text>
+          <Text style={styles.readBtnText}>Read Full Story</Text>
+          <Ionicons name="arrow-forward" size={15} color="#111111" />
         </Pressable>
       </View>
 
@@ -180,10 +182,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 3,
   },
-  swipeArrow: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 16,
-  },
   swipeLabel: {
     color: 'rgba(255,255,255,0.4)',
     fontSize: 10,
@@ -191,6 +189,9 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   readBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 22,
     paddingVertical: 13,
     borderRadius: 28,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 
 interface EmptyStateProps {
@@ -12,7 +13,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ isError, onRetry }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.emoji}>{isError ? '⚠️' : '📰'}</Text>
+      <Ionicons
+        name={isError ? 'alert-circle-outline' : 'newspaper-outline'}
+        size={56}
+        color="rgba(255,255,255,0.2)"
+        style={styles.icon}
+      />
       <Text style={[styles.title, { color: colors.text }]}>
         {isError ? 'Could not load news' : 'No stories found'}
       </Text>
@@ -40,8 +46,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 40,
   },
-  emoji: {
-    fontSize: 56,
+  icon: {
     marginBottom: 18,
   },
   title: {

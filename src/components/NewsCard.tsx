@@ -8,6 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { Article } from '../types';
 import { ShimmerBackground } from './ShimmerBackground';
 
@@ -61,9 +62,11 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
         onPress={onToggleBookmark}
         hitSlop={10}
       >
-        <Text style={[styles.bookmarkIcon, isBookmarked && styles.bookmarkIconSaved]}>
-          {isBookmarked ? '♥' : '♡'}
-        </Text>
+        <Ionicons
+          name={isBookmarked ? 'heart' : 'heart-outline'}
+          size={20}
+          color={isBookmarked ? '#ff3b5c' : 'rgba(255,255,255,0.88)'}
+        />
       </Pressable>
 
       {/* Content — anchored to bottom, sits in the dark zone */}
@@ -110,13 +113,6 @@ const styles = StyleSheet.create({
   bookmarkBtnPressed: {
     backgroundColor: 'rgba(255,255,255,0.15)',
     transform: [{ scale: 0.9 }],
-  },
-  bookmarkIcon: {
-    fontSize: 17,
-    color: 'rgba(255,255,255,0.9)',
-  },
-  bookmarkIconSaved: {
-    color: '#ff3b5c',
   },
   content: {
     position: 'absolute',

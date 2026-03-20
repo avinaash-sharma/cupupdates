@@ -1,13 +1,14 @@
 import 'react-native-gesture-handler'; // must be first import
-import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
+import { Ionicons } from '@expo/vector-icons';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { RestartContext } from './src/context/RestartContext';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { BookmarksScreen } from './src/screens/BookmarksScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
@@ -16,15 +17,11 @@ import { getUserPreferences } from './src/utils/storage';
 
 const Tab = createBottomTabNavigator();
 
-// ── Restart context ───────────────────────────────────────────────────────────
-// Calling restartApp() forces the entire React tree to remount, which re-reads
-// AsyncStorage so any persisted changes (e.g. language) take effect immediately.
-export const RestartContext = createContext<() => void>(() => {});
-export const useRestart = () => useContext(RestartContext);
+// RestartContext is defined in src/context/RestartContext.ts to avoid circular deps.
 
-const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => (
-  <Text style={{ fontSize: focused ? 24 : 21, opacity: focused ? 1 : 0.45 }}>{icon}</Text>
-);
+const ACTIVE_COLOR   = '#ffffff';
+const INACTIVE_COLOR = 'rgba(255,255,255,0.38)';
+const ICON_SIZE      = 24;
 
 const MainTabs: React.FC = () => {
   const { colors } = useTheme();
@@ -32,25 +29,56 @@ const MainTabs: React.FC = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
-        tabBarActiveTintColor: '#4f46e5',
-        tabBarInactiveTintColor: colors.subtext,
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          height: 58,
+          paddingBottom: 8,
+          paddingTop: 6,
+        },
+        tabBarActiveTintColor: ACTIVE_COLOR,
+        tabBarInactiveTintColor: INACTIVE_COLOR,
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600', letterSpacing: 0.3 },
       }}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} /> }}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? 'home' : 'home-outline'}
+              size={ICON_SIZE}
+              color={focused ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
+          ),
+        }}
       />
       <Tab.Screen
         name="Bookmarks"
         component={BookmarksScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon icon="🔖" focused={focused} /> }}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? 'bookmark' : 'bookmark-outline'}
+              size={ICON_SIZE}
+              color={focused ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
+          ),
+        }}
       />
       <Tab.Screen
         name="Settings"
         component={SettingsScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon icon="⚙️" focused={focused} /> }}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? 'settings' : 'settings-outline'}
+              size={ICON_SIZE}
+              color={focused ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
+          ),
+        }}
       />
     </Tab.Navigator>
   );

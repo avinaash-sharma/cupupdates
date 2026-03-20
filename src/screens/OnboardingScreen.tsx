@@ -10,6 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { saveUserPreferences } from '../utils/storage';
 import { CategorySelector } from '../components/CategorySelector';
 import { SUPPORTED_LANGUAGES } from '../types';
@@ -58,7 +59,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
     <View style={styles.steps}>
       {/* Step 1 */}
       <View style={[styles.stepDot, step === 1 ? styles.stepDotActive : styles.stepDotDone]}>
-        {step > 1 && <Text style={styles.stepDotDoneText}>✓</Text>}
+        {step > 1 && <Ionicons name="checkmark" size={13} color="#ffffff" />}
       </View>
       <View style={[styles.stepLine, step > 1 && styles.stepLineDone]} />
       {/* Step 2 */}
@@ -68,7 +69,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
           step === 2 ? styles.stepDotActive : step > 2 ? styles.stepDotDone : undefined,
         ]}
       >
-        {step > 2 && <Text style={styles.stepDotDoneText}>✓</Text>}
+        {step > 2 && <Ionicons name="checkmark" size={13} color="#ffffff" />}
       </View>
       <View style={[styles.stepLine, step > 2 && styles.stepLineDone]} />
       {/* Step 3 */}
@@ -153,7 +154,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
                         <Text style={styles.languageNative}>{lang.nativeLabel}</Text>
                       )}
                     </View>
-                    {isSelected && <Text style={styles.languageCheck}>✓</Text>}
+                    {isSelected && <Ionicons name="checkmark" size={20} color="#4f46e5" />}
                   </TouchableOpacity>
                 );
               })}
@@ -248,11 +249,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(79,70,229,0.5)',
     borderColor: '#4f46e5',
   },
-  stepDotDoneText: {
-    fontSize: 11,
-    color: '#ffffff',
-    fontWeight: '700',
-  },
   stepLine: {
     width: 40,
     height: 1,
@@ -325,11 +321,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: 'rgba(255,255,255,0.45)',
     marginTop: 2,
-  },
-  languageCheck: {
-    fontSize: 18,
-    color: '#4f46e5',
-    fontWeight: '700',
   },
   settingsHint: {
     fontSize: 13,

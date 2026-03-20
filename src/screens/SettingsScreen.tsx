@@ -13,8 +13,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettings } from '../hooks/useSettings';
 import { useTheme } from '../context/ThemeContext';
 import { CategorySelector } from '../components/CategorySelector';
+import { Ionicons } from '@expo/vector-icons';
 import { SUPPORTED_LANGUAGES } from '../types';
-import { useRestart } from '../../App';
+import { useRestart } from '../context/RestartContext';
 
 const APP_VERSION = '1.0.0';
 const MIN_CATEGORIES = 3;
@@ -77,7 +78,9 @@ export const SettingsScreen: React.FC = () => {
 
           {editingName ? (
             <View style={[styles.editRow, { borderBottomColor: colors.border }]}>
-              <Text style={styles.rowIcon}>👤</Text>
+              <View style={styles.rowIconWrap}>
+                <Ionicons name="person-outline" size={18} color={colors.subtext} />
+              </View>
               <TextInput
                 style={[styles.nameInput, { color: colors.text, borderColor: colors.border }]}
                 value={nameInput}
@@ -98,7 +101,9 @@ export const SettingsScreen: React.FC = () => {
           ) : (
             <View style={[styles.row, { borderBottomColor: colors.border }]}>
               <View style={styles.rowLeft}>
-                <Text style={styles.rowIcon}>👤</Text>
+                <View style={styles.rowIconWrap}>
+                  <Ionicons name="person-outline" size={18} color={colors.subtext} />
+                </View>
                 <Text style={[styles.rowLabel, { color: colors.text }]}>Your Name</Text>
               </View>
               <TouchableOpacity onPress={startEditing}>
@@ -147,7 +152,7 @@ export const SettingsScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <View style={styles.rowLeft}>
-                    <Text style={styles.rowIcon}>{lang.flag}</Text>
+                    <Text style={styles.langFlag}>{lang.flag}</Text>
                     <View>
                       <Text style={[styles.rowLabel, { color: colors.text }]}>{lang.label}</Text>
                       {lang.nativeLabel !== lang.label && (
@@ -157,7 +162,7 @@ export const SettingsScreen: React.FC = () => {
                       )}
                     </View>
                   </View>
-                  {isSelected && <Text style={styles.languageCheck}>✓</Text>}
+                  {isSelected && <Ionicons name="checkmark" size={20} color="#4f46e5" />}
                 </TouchableOpacity>
               );
             })}
@@ -169,7 +174,9 @@ export const SettingsScreen: React.FC = () => {
           <Text style={[styles.sectionLabel, { color: colors.subtext }]}>APPEARANCE</Text>
           <View style={[styles.row, { borderBottomColor: colors.border }]}>
             <View style={styles.rowLeft}>
-              <Text style={styles.rowIcon}>🌙</Text>
+              <View style={styles.rowIconWrap}>
+                <Ionicons name="moon-outline" size={18} color={colors.subtext} />
+              </View>
               <Text style={[styles.rowLabel, { color: colors.text }]}>Dark Mode</Text>
             </View>
             <Switch
@@ -186,14 +193,18 @@ export const SettingsScreen: React.FC = () => {
           <Text style={[styles.sectionLabel, { color: colors.subtext }]}>ABOUT</Text>
           <View style={[styles.row, { borderBottomColor: colors.border }]}>
             <View style={styles.rowLeft}>
-              <Text style={styles.rowIcon}>☕</Text>
+              <View style={styles.rowIconWrap}>
+                <Ionicons name="cafe-outline" size={18} color={colors.subtext} />
+              </View>
               <Text style={[styles.rowLabel, { color: colors.text }]}>CupUpdates</Text>
             </View>
             <Text style={[styles.rowValue, { color: colors.subtext }]}>Your daily news</Text>
           </View>
           <View style={[styles.row, { borderBottomColor: 'transparent' }]}>
             <View style={styles.rowLeft}>
-              <Text style={styles.rowIcon}>ℹ️</Text>
+              <View style={styles.rowIconWrap}>
+                <Ionicons name="information-circle-outline" size={18} color={colors.subtext} />
+              </View>
               <Text style={[styles.rowLabel, { color: colors.text }]}>Version</Text>
             </View>
             <Text style={[styles.rowValue, { color: colors.subtext }]}>{APP_VERSION}</Text>
@@ -245,7 +256,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  rowIcon: { fontSize: 18, width: 24, textAlign: 'center' },
+  rowIconWrap: { width: 24, alignItems: 'center' },
+  langFlag: { fontSize: 20, width: 28, textAlign: 'center' },
   rowLabel: { fontSize: 15, fontWeight: '500' },
   rowValue: { fontSize: 14 },
   editLink: { color: '#4f46e5', fontWeight: '600' },
@@ -288,10 +300,5 @@ const styles = StyleSheet.create({
   languageNative: {
     fontSize: 12,
     marginTop: 1,
-  },
-  languageCheck: {
-    fontSize: 17,
-    color: '#4f46e5',
-    fontWeight: '700',
   },
 });

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { getBookmarks, saveBookmarks } from '../utils/storage';
 import { Article } from '../types';
@@ -55,7 +56,7 @@ export const BookmarksScreen: React.FC = () => {
             onPress={() => removeBookmark(item.id)}
             hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
           >
-            <Text style={styles.removeIcon}>✕</Text>
+            <Ionicons name="close" size={18} color="rgba(255,255,255,0.4)" />
           </TouchableOpacity>
         </View>
 
@@ -66,8 +67,9 @@ export const BookmarksScreen: React.FC = () => {
           {item.title}
         </Text>
 
-        <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
-          <Text style={styles.readMore}>Read More →</Text>
+        <TouchableOpacity style={styles.readMoreRow} onPress={() => Linking.openURL(item.url)}>
+          <Text style={styles.readMore}>Read More</Text>
+          <Ionicons name="arrow-forward" size={13} color="#4f46e5" />
         </TouchableOpacity>
       </View>
     </View>
@@ -96,12 +98,12 @@ export const BookmarksScreen: React.FC = () => {
 
       {bookmarks.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>🔖</Text>
+          <Ionicons name="bookmark-outline" size={56} color="rgba(255,255,255,0.18)" style={styles.emptyIcon} />
           <Text style={[styles.emptyTitle, { color: colors.text }]}>
             No bookmarks yet
           </Text>
           <Text style={[styles.emptyDesc, { color: colors.subtext }]}>
-            Tap the bookmark icon on any article to save it here.
+            Tap the heart icon on any article to save it here.
           </Text>
         </View>
       ) : (
@@ -166,16 +168,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  removeIcon: {
-    fontSize: 14,
-    color: '#ff4444',
-    fontWeight: '700',
-  },
   title: {
     fontSize: 14,
     fontWeight: '600',
     lineHeight: 20,
     marginBottom: 8,
+  },
+  readMoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   readMore: {
     fontSize: 13,
@@ -188,8 +190,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 40,
   },
-  emptyEmoji: {
-    fontSize: 64,
+  emptyIcon: {
     marginBottom: 16,
   },
   emptyTitle: {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SUPPORTED_CATEGORIES } from '../types';
 import { useTheme } from '../context/ThemeContext';
 
@@ -74,7 +75,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
             >
               {cat}
             </Text>
-            {active && <Text style={styles.checkmark}>✓</Text>}
+            {active && <Ionicons name="checkmark" size={13} color="rgba(255,255,255,0.85)" />}
           </Pressable>
         );
       })}
@@ -100,9 +101,5 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 14,
     letterSpacing: 0.1,
-  },
-  checkmark: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
   },
 });

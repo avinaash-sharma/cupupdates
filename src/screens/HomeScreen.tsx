@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Article, DEFAULT_CATEGORY } from '../types';
+import { Article, DEFAULT_CATEGORY, TRENDING_CATEGORY } from '../types';
 import { useNews } from '../hooks/useNews';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useSettings } from '../hooks/useSettings';
@@ -12,11 +13,12 @@ import { CategoryChips } from '../components/CategoryChips';
 import { GreetingHeader } from '../components/GreetingHeader';
 import { InterstitialAd } from '../components/InterstitialAd';
 import { EmptyState } from '../components/EmptyState';
+import { scoreArticle } from '../utils/scoreArticle';
 
 const INTERSTITIAL_INTERVAL = 5;
 
 export const HomeScreen: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState<string>(DEFAULT_CATEGORY);
+  const [activeCategory, setActiveCategory] = useState<string>(TRENDING_CATEGORY);
   const [currentIndex, setCurrentIndex] = useState(0);
   const swipeCountRef = useRef(0);
   const [showInterstitial, setShowInterstitial] = useState(false);
@@ -27,17 +29,18 @@ export const HomeScreen: React.FC = () => {
   // ── Per-category fetch: specific tab → fetch only that; All → fetch all selected ──
   const categoriesToFetch = useMemo(() => {
     if (!prefsLoaded) return [];
+    if (activeCategory === TRENDING_CATEGORY) return ['Top'];
     if (activeCategory === DEFAULT_CATEGORY) return selectedCategories;
     return [activeCategory];
   }, [prefsLoaded, activeCategory, selectedCategories]);
 
   const { articles, isLoading, isLoadingMore, isError, refresh, loadMore } =
-    useNews(categoriesToFetch, language);
+    useNews(categoriesToFetch, language, selectedCategories);
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
 
   const chipCategories = useMemo(
-    () => [DEFAULT_CATEGORY, ...selectedCategories],
+    () => [TRENDING_CATEGORY, DEFAULT_CATEGORY, ...selectedCategories],
     [selectedCategories],
   );
 
@@ -49,11 +52,22 @@ export const HomeScreen: React.FC = () => {
   const handleSwipe = useCallback(() => {
     setCurrentIndex((prev) => {
       const next = prev + 1;
-      return next < articles.length ? next : prev;
+      if (next < articles.length) {
+        const a = articles[next];
+        if (__DEV__) {
+          const score = scoreArticle(a, selectedCategories);
+          console.log(
+            `[Swipe] #${next + 1}/${articles.length}  score=${score}`,
+            `| ${a.category} | ${a.source} | ${a.title.slice(0, 50)}`,
+          );
+        }
+        return next;
+      }
+      return prev;
     });
     swipeCountRef.current += 1;
     if (swipeCountRef.current % INTERSTITIAL_INTERVAL === 0) setShowInterstitial(true);
-  }, [articles.length]);
+  }, [articles, selectedCategories]);
 
   const handleSwipeBack = useCallback(() => {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
@@ -133,9 +147,15 @@ export const HomeScreen: React.FC = () => {
           <Text style={styles.swipeLabel}>SWIPE UP</Text>
         </View>
 
+        {showDeck && (
+          <Text style={styles.positionText}>
+            {currentIndex + 1} / {articles.length}
+          </Text>
+        )}
+
         <Pressable
           style={({ pressed }) => [styles.readBtn, pressed && styles.readBtnPressed]}
-          onPress={() => { if (currentArticle?.url) Linking.openURL(currentArticle.url); }}
+          onPress={() => { if (currentArticle?.url) WebBrowser.openBrowserAsync(currentArticle.url); }}
         >
           <Text style={styles.readBtnText}>Read Full Story</Text>
           <Ionicons name="arrow-forward" size={15} color="#111111" />
@@ -157,9 +177,10 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     flex: 1,
-    marginHorizontal: 18,
-    marginVertical: 8,
-    borderRadius: 22,
+    marginHorizontal: 16,
+    marginTop: 6,
+    marginBottom: 4,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     overflow: 'hidden',
@@ -176,7 +197,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingTop: 14,
+    paddingTop: 18,
   },
   swipeHint: {
     alignItems: 'center',
@@ -187,6 +208,10 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     letterSpacing: 1.5,
+  },
+  positionText: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 12,
   },
   readBtn: {
     flexDirection: 'row',

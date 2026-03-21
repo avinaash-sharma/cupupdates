@@ -7,6 +7,7 @@ export interface Article {
   url: string;
   source: string;
   publishedAt: string;
+  isBreaking?: boolean;
 }
 
 export type Category = string;
@@ -27,6 +28,7 @@ export const SUPPORTED_CATEGORIES = [
 ] as const;
 
 export const DEFAULT_CATEGORY = 'All';
+export const TRENDING_CATEGORY = 'Trending';
 
 export interface UserPreferences {
   name: string;

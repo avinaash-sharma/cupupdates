@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Linking,
 } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -67,7 +67,7 @@ export const BookmarksScreen: React.FC = () => {
           {item.title}
         </Text>
 
-        <TouchableOpacity style={styles.readMoreRow} onPress={() => Linking.openURL(item.url)}>
+        <TouchableOpacity style={styles.readMoreRow} onPress={() => WebBrowser.openBrowserAsync(item.url)}>
           <Text style={styles.readMore}>Read More</Text>
           <Ionicons name="arrow-forward" size={13} color="#4f46e5" />
         </TouchableOpacity>

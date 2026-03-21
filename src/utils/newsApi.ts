@@ -14,6 +14,7 @@ interface RawArticle {
   source_name: string | null;
   category: string[] | null;
   language: string;
+  breaking_news?: 0 | 1;
 }
 
 interface NewsDataResponse {
@@ -24,6 +25,18 @@ interface NewsDataResponse {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+function deduplicateArticles(articles: Article[]): Article[] {
+  const seenIds = new Set<string>();
+  const seenTitles = new Set<string>();
+  return articles.filter((a) => {
+    const titleKey = a.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60);
+    if (seenIds.has(a.id) || seenTitles.has(titleKey)) return false;
+    seenIds.add(a.id);
+    seenTitles.add(titleKey);
+    return true;
+  });
+}
 
 // ['Technology', 'Business'] → 'technology,business'  (API accepts CSV)
 function toCategoryParam(categories: string[]): string | null {
@@ -86,6 +99,7 @@ function transform(raw: RawArticle): Article | null {
     url: raw.link,
     source: raw.source_name || raw.source_id || 'Unknown',
     publishedAt: raw.pubDate || new Date().toISOString(),
+    isBreaking: raw.breaking_news === 1 ? true : undefined,
   };
 }
 
@@ -109,7 +123,7 @@ export async function fetchNews(
     apikey: NEWS_API_KEY,
     language,
     size: '10',
-    image: '1'
+    image: '1',
   });
 
   const cat = toCategoryParam(categories);
@@ -118,7 +132,7 @@ export async function fetchNews(
 
   const url = `${NEWS_API_BASE}?${params}`;
 
-  console.log('[NewsAPI] →', url);
+  if (__DEV__) console.log('[NewsAPI] →', url);
   const t0 = Date.now();
 
   let response: Response;
@@ -130,7 +144,7 @@ export async function fetchNews(
   }
 
   const ms = Date.now() - t0;
-  console.log(`[NewsAPI] ← ${response.status} ${response.statusText} (${ms}ms)`);
+  if (__DEV__) console.log(`[NewsAPI] ← ${response.status} ${response.statusText} (${ms}ms)`);
 
   if (!response.ok) {
     const body = await response.text().catch(() => '');
@@ -145,31 +159,16 @@ export async function fetchNews(
     throw new Error(`NewsData returned status: ${data.status}`);
   }
 
-  console.log(`[NewsAPI] raw results received: ${data.results.length}`);
-  console.log(
-    '[NewsAPI] raw list:',
-    data.results.map((r) => ({
-      id: r.article_id,
-      title: r.title?.slice(0, 60),
-      language: r.language,
-      category: r.category,
-      has_image: !!r.image_url,
-      has_desc: !!(r.description || r.content),
-    })),
+  if (__DEV__) console.log(`[NewsAPI] raw results received: ${data.results.length}`);
+
+  const articles = deduplicateArticles(
+    data.results.map(transform).filter((a): a is Article => a !== null),
   );
 
-  const articles = data.results
-    .map(transform)
-    .filter((a): a is Article => a !== null);
-
-  console.log(
-    `[NewsAPI] ✓ after filter: ${articles.length} kept, ${data.results.length - articles.length} dropped`,
+  if (__DEV__) console.log(
+    `[NewsAPI] ✓ ${articles.length} kept, ${data.results.length - articles.length} dropped`,
     '| categories:', cat ?? 'all',
     data.nextPage ? `| nextPage: ${data.nextPage}` : '',
-  );
-  console.log(
-    '[NewsAPI] final articles:',
-    articles.map((a) => ({ id: a.id, title: a.title.slice(0, 60), category: a.category })),
   );
 
   return { articles, nextPage: data.nextPage };

@@ -60,12 +60,13 @@ A React Native news reader app with a cinematic swipe-through card experience fo
 - **Trending** category chip (permanent, default) maps to the `top` endpoint on NewsData.io
 
 **Card design**
-- Image occupies the top 65% of the card with `resizeMode="contain"` — full image visible, no cropping; letterbox areas use the card's dark base colour
-- Smooth gradient fade from the image zone into the dark text area
-- Category label (indigo pill), bold headline, and dimmed summary
-- Source name and relative time ("BBC News · 2h ago") below the summary
+- Image occupies the top 62% with `resizeMode="cover"` and a subtle `scale(1.05)` zoom — full-bleed, editorial feel
+- Dual gradient overlay: top vignette keeps action buttons legible; bottom fade pulls the image into the dark content zone
+- Georgia/serif headline at `fontSize 22`, `fontWeight 600`, `lineHeight 28` — tighter, more editorial than system default
+- Summary at `fontSize 12`, `opacity 0.45` — clearly secondary to the headline
+- Source name and relative time ("BBC News · 2h ago") recessed below the summary
 - Red **BREAKING** pill shown on articles flagged `breaking_news = 1` by the API
-- Bookmark (heart) and share buttons top-right with pressed states
+- Bookmark and share buttons: 40×40 circular surface with `opacity 0.52` backdrop, press scales to 0.9
 
 **Language support**
 - English (EN) and Hindi (हिंदी) selectable at onboarding and in Settings
@@ -80,7 +81,7 @@ A React Native news reader app with a cinematic swipe-through card experience fo
 - Preference persisted to storage and applied on next launch
 
 **Image handling**
-- Full image shown without cropping (`resizeMode="contain"`); dark `#111827` letterbox background blends with the card theme
+- `resizeMode="cover"` with `scale(1.05)` for a full-bleed, slightly zoomed editorial look
 - Shimmer animation plays inside the image area while each image loads — previous image never bleeds through to the next card
 - Image state (loaded / error) resets per article via `key` prop and `useEffect`, preventing stale state across swipes
 - Falls back to seeded `picsum.photos` placeholder if an article has no image or the load fails

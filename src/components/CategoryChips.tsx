@@ -31,21 +31,11 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
             onPress={() => onSelect(cat)}
             style={({ pressed }) => [
               styles.chip,
-              {
-                backgroundColor: active ? colors.text : 'transparent',
-                transform: [{ scale: pressed ? 0.93 : 1 }],
-              },
+              active ? styles.chipActive : styles.chipInactive,
+              pressed && styles.chipPressed,
             ]}
           >
-            <Text
-              style={[
-                styles.chipText,
-                {
-                  color: active ? colors.background : colors.subtext,
-                  fontWeight: active ? '700' : '500',
-                },
-              ]}
-            >
+            <Text style={[styles.chipText, active ? styles.chipTextActive : styles.chipTextInactive]}>
               {cat}
             </Text>
           </Pressable>
@@ -61,15 +51,32 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   chip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
+  chipActive: {
+    backgroundColor: '#ffffff',
+  },
+  chipInactive: {
+    backgroundColor: 'transparent',
+  },
+  chipPressed: {
+    transform: [{ scale: 0.93 }],
+  },
   chipText: {
     fontSize: 13,
     letterSpacing: 0.2,
+  },
+  chipTextActive: {
+    color: '#000000',
+    fontWeight: '700',
+  },
+  chipTextInactive: {
+    color: '#888888',
+    fontWeight: '500',
   },
 });

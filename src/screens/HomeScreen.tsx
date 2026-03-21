@@ -20,6 +20,7 @@ const INTERSTITIAL_INTERVAL = 5;
 export const HomeScreen: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>(TRENDING_CATEGORY);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [hasSwipedOnce, setHasSwipedOnce] = useState(false);
   const swipeCountRef = useRef(0);
   const [showInterstitial, setShowInterstitial] = useState(false);
 
@@ -65,9 +66,10 @@ export const HomeScreen: React.FC = () => {
       }
       return prev;
     });
+    if (!hasSwipedOnce) setHasSwipedOnce(true);
     swipeCountRef.current += 1;
     if (swipeCountRef.current % INTERSTITIAL_INTERVAL === 0) setShowInterstitial(true);
-  }, [articles, selectedCategories]);
+  }, [articles, selectedCategories, hasSwipedOnce]);
 
   const handleSwipeBack = useCallback(() => {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
@@ -142,8 +144,8 @@ export const HomeScreen: React.FC = () => {
 
       {/* ── Bottom controls — outside card ── */}
       <View style={[styles.bottomControls, { paddingBottom: insets.bottom + 8 }]}>
-        <View style={styles.swipeHint}>
-          <Ionicons name="arrow-up" size={16} color="rgba(255,255,255,0.45)" />
+        <View style={[styles.swipeHint, hasSwipedOnce && styles.swipeHintHidden]}>
+          <Ionicons name="arrow-up" size={16} color="rgba(255,255,255,0.3)" />
           <Text style={styles.swipeLabel}>SWIPE UP</Text>
         </View>
 
@@ -158,7 +160,7 @@ export const HomeScreen: React.FC = () => {
           onPress={() => { if (currentArticle?.url) WebBrowser.openBrowserAsync(currentArticle.url); }}
         >
           <Text style={styles.readBtnText}>Read Full Story</Text>
-          <Ionicons name="arrow-forward" size={15} color="#111111" />
+          <Ionicons name="arrow-forward" size={15} color="#ffffff" />
         </Pressable>
       </View>
 
@@ -203,6 +205,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 3,
   },
+  swipeHintHidden: {
+    opacity: 0,
+  },
   swipeLabel: {
     color: 'rgba(255,255,255,0.4)',
     fontSize: 10,
@@ -220,14 +225,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingVertical: 13,
     borderRadius: 28,
-    backgroundColor: 'rgba(245,245,245,0.92)',
+    backgroundColor: '#4f46e5',
   },
   readBtnPressed: {
-    backgroundColor: 'rgba(245,245,245,0.7)',
+    backgroundColor: '#4338ca',
     transform: [{ scale: 0.97 }],
   },
   readBtnText: {
-    color: '#111111',
+    color: '#ffffff',
     fontSize: 15,
     fontWeight: '600',
   },

@@ -64,7 +64,19 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
         )}
       </View>
 
-      {/* Gradient: fully clear at top, smooth fade into dark text zone */}
+      {/* Top vignette — blends card edge into image */}
+      <LinearGradient
+        colors={[
+          'rgba(8,8,8,0.55)',
+          'rgba(8,8,8,0.18)',
+          'transparent',
+        ]}
+        locations={[0, 0.18, 0.38]}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
+
+      {/* Bottom gradient — fades image into dark text zone */}
       <LinearGradient
         colors={[
           'transparent',
@@ -210,20 +222,23 @@ const styles = StyleSheet.create({
   sourceMeta: {
     color: 'rgba(255,255,255,0.35)',
     fontSize: 11,
+    fontWeight: '500',
     marginTop: 16,
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
   title: {
     color: '#ffffff',
     fontSize: 23,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    lineHeight: 33,
+    fontWeight: '700',
+    lineHeight: 28,
     marginBottom: 14,
   },
   summary: {
-    color: 'rgba(255,255,255,0.52)',
+    color: 'rgba(255,255,255,0.55)',
     fontSize: 13,
-    lineHeight: 22,
-    letterSpacing: 0.1,
+    fontWeight: '500',
+    lineHeight: 19,
+    letterSpacing: 0.15,
   },
 });

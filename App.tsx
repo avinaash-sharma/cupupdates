@@ -24,7 +24,7 @@ const ICON_SIZE = 24;
 const MainTabs: React.FC = () => {
   const { colors, isDark } = useTheme();
 
-  const activeColor   = isDark ? '#ffffff' : '#4f46e5';
+  const activeColor   = '#4f46e5';
   const inactiveColor = isDark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.35)';
 
   return (
@@ -32,8 +32,8 @@ const MainTabs: React.FC = () => {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
+          backgroundColor: isDark ? '#0B0B0F' : colors.card,
+          borderTopColor: isDark ? 'rgba(255,255,255,0.07)' : colors.border,
           height: 58,
           paddingBottom: 8,
           paddingTop: 6,

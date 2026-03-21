@@ -160,7 +160,7 @@ export const HomeScreen: React.FC = () => {
           onPress={() => { if (currentArticle?.url) WebBrowser.openBrowserAsync(currentArticle.url); }}
         >
           <Text style={styles.readBtnText}>Read Full Story</Text>
-          <Ionicons name="arrow-forward" size={15} color="#ffffff" />
+          <Ionicons name="arrow-forward" size={14} color="rgba(255,255,255,0.6)" />
         </Pressable>
       </View>
 
@@ -175,31 +175,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#080808',
   },
   cardBg: {
-    backgroundColor: '#111',
+    backgroundColor: '#111113',
   },
   cardContainer: {
     flex: 1,
-    marginHorizontal: 16,
-    marginTop: 6,
-    marginBottom: 4,
+    marginHorizontal: 12,
+    marginTop: 4,
+    marginBottom: 2,
     borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.08)',
     overflow: 'hidden',
-    backgroundColor: '#111',
+    backgroundColor: '#111113',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#111',
+    backgroundColor: '#111113',
   },
   bottomControls: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 18,
+    paddingHorizontal: 20,
+    paddingTop: 14,
   },
   swipeHint: {
     alignItems: 'center',
@@ -209,31 +209,35 @@ const styles = StyleSheet.create({
     opacity: 0,
   },
   swipeLabel: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 10,
+    color: 'rgba(255,255,255,0.3)',
+    fontSize: 9,
     fontWeight: '600',
-    letterSpacing: 1.5,
+    letterSpacing: 1.6,
   },
   positionText: {
-    color: 'rgba(255,255,255,0.4)',
+    color: 'rgba(255,255,255,0.3)',
     fontSize: 12,
+    fontWeight: '500',
   },
   readBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 22,
-    paddingVertical: 13,
+    paddingHorizontal: 20,
+    paddingVertical: 11,
     borderRadius: 28,
-    backgroundColor: '#4f46e5',
+    backgroundColor: '#1A1A1F',
+    borderWidth: 1,
+    borderColor: '#2A2A2E',
   },
   readBtnPressed: {
-    backgroundColor: '#4338ca',
+    backgroundColor: '#222228',
     transform: [{ scale: 0.97 }],
   },
   readBtnText: {
     color: '#ffffff',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
+    letterSpacing: 0.2,
   },
 });

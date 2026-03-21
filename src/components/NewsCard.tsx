@@ -40,7 +40,7 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
       await Share.share({
         title: article.title,
         message: Platform.OS === 'ios' ? article.title : `${article.title}\n\n${article.url}`,
-        url: article.url,          // iOS only
+        url: article.url, // iOS only
       });
     } catch {
       // user dismissed or share unavailable — silent fail
@@ -49,7 +49,7 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
 
   return (
     <View style={StyleSheet.absoluteFill}>
-      {/* Image container — dark base handles letterbox; shimmer shown while loading */}
+      {/* Image container — cover mode fills frame; shimmer shown while loading */}
       <View style={styles.imageContainer}>
         {showImage && !isImageLoaded && <ShimmerBackground />}
         {showImage && (
@@ -57,36 +57,32 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
             key={article.imageUrl}
             source={{ uri: article.imageUrl }}
             style={styles.image}
-            resizeMode="contain"
+            resizeMode="cover"
             onLoad={() => setIsImageLoaded(true)}
             onError={() => setImgError(true)}
           />
         )}
       </View>
 
-      {/* Top vignette — blends card edge into image */}
+      {/* Top vignette — darkens top edge so action buttons stay readable */}
       <LinearGradient
-        colors={[
-          'rgba(8,8,8,0.55)',
-          'rgba(8,8,8,0.18)',
-          'transparent',
-        ]}
-        locations={[0, 0.18, 0.38]}
+        colors={['rgba(5,5,5,0.72)', 'rgba(5,5,5,0.22)', 'transparent']}
+        locations={[0, 0.16, 0.36]}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
 
-      {/* Bottom gradient — fades image into dark text zone */}
+      {/* Bottom gradient — pulls image into the dark content zone */}
       <LinearGradient
         colors={[
           'transparent',
           'transparent',
-          'rgba(8,8,8,0.35)',
-          'rgba(8,8,8,0.82)',
-          'rgba(8,8,8,0.97)',
+          'rgba(5,5,5,0.45)',
+          'rgba(5,5,5,0.88)',
+          'rgba(5,5,5,0.97)',
           '#080808',
         ]}
-        locations={[0, 0.28, 0.44, 0.57, 0.68, 0.78]}
+        locations={[0, 0.32, 0.48, 0.60, 0.70, 0.80]}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
@@ -100,8 +96,8 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
         >
           <Ionicons
             name={isBookmarked ? 'heart' : 'heart-outline'}
-            size={20}
-            color={isBookmarked ? '#ff3b5c' : 'rgba(255,255,255,0.88)'}
+            size={19}
+            color={isBookmarked ? '#ff3b5c' : 'rgba(255,255,255,0.9)'}
           />
         </Pressable>
 
@@ -110,7 +106,7 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
           onPress={handleShare}
           hitSlop={10}
         >
-          <Ionicons name="share-outline" size={20} color="rgba(255,255,255,0.88)" />
+          <Ionicons name="share-outline" size={19} color="rgba(255,255,255,0.9)" />
         </Pressable>
       </View>
 
@@ -151,33 +147,34 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: '65%',
-    backgroundColor: '#111827',
+    height: '62%',
+    backgroundColor: '#111113',
     overflow: 'hidden',
   },
   image: {
     width: '100%',
     height: '100%',
+    transform: [{ scale: 1.05 }],
   },
   actions: {
     position: 'absolute',
-    top: 14,
-    right: 14,
+    top: 16,
+    right: 16,
     gap: 10,
     alignItems: 'center',
   },
   actionBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(0,0,0,0.40)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.52)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   actionBtnPressed: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     transform: [{ scale: 0.9 }],
   },
   content: {
@@ -185,60 +182,60 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingHorizontal: 22,
+    paddingBottom: 36,
     paddingTop: 20,
   },
   pillRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   breakingPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
     borderRadius: 6,
     backgroundColor: 'rgba(220,38,38,0.85)',
   },
   breakingText: {
     color: '#ffffff',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
-    letterSpacing: 1.2,
+    letterSpacing: 1.1,
   },
   categoryPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
     borderRadius: 6,
     backgroundColor: 'rgba(79,70,229,0.80)',
   },
   categoryText: {
     color: '#ffffff',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
-    letterSpacing: 1.2,
-  },
-  sourceMeta: {
-    color: 'rgba(255,255,255,0.35)',
-    fontSize: 11,
-    fontWeight: '500',
-    marginTop: 16,
-    letterSpacing: 0.3,
+    letterSpacing: 1.1,
   },
   title: {
     color: '#ffffff',
-    fontSize: 23,
+    fontSize: 22,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    fontWeight: '700',
+    fontWeight: '600',
     lineHeight: 28,
-    marginBottom: 14,
+    marginBottom: 10,
   },
   summary: {
-    color: 'rgba(255,255,255,0.55)',
-    fontSize: 13,
+    color: 'rgba(255,255,255,0.45)',
+    fontSize: 12,
+    fontWeight: '400',
+    lineHeight: 18,
+    letterSpacing: 0.1,
+  },
+  sourceMeta: {
+    color: 'rgba(255,255,255,0.3)',
+    fontSize: 11,
     fontWeight: '500',
-    lineHeight: 19,
-    letterSpacing: 0.15,
+    marginTop: 14,
+    letterSpacing: 0.4,
   },
 });

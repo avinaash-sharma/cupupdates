@@ -1,21 +1,33 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { getGreeting } from '../utils/greeting';
 
 interface GreetingHeaderProps {
   userName: string;
+  onSearchPress: () => void;
 }
 
-export const GreetingHeader: React.FC<GreetingHeaderProps> = ({ userName }) => {
+export const GreetingHeader: React.FC<GreetingHeaderProps> = ({ userName, onSearchPress }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.greeting} numberOfLines={1}>
         {getGreeting(userName)}
       </Text>
 
-      {/* Circular avatar mark */}
-      <View style={styles.avatar}>
-        <Text style={styles.avatarEmoji}>☕</Text>
+      <View style={styles.actions}>
+        <Pressable
+          onPress={onSearchPress}
+          style={({ pressed }) => [styles.iconBtn, pressed && styles.iconBtnPressed]}
+          hitSlop={8}
+        >
+          <Ionicons name="search-outline" size={19} color="rgba(255,255,255,0.75)" />
+        </Pressable>
+
+        {/* Circular avatar mark */}
+        <View style={styles.avatar}>
+          <Text style={styles.avatarEmoji}>☕</Text>
+        </View>
       </View>
     </View>
   );
@@ -37,6 +49,24 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
     flex: 1,
     marginRight: 12,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#1A1A1F',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconBtnPressed: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   avatar: {
     width: 36,

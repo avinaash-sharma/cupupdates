@@ -149,6 +149,23 @@ src/
 
 ---
 
+## Design System
+
+| Token | Value | Used for |
+|---|---|---|
+| Background | `#080808` | App root, screen bg |
+| Surface | `#111113` | Cards, card container |
+| Elevated surface | `#1A1A1F` | CTA button, avatar bg |
+| Border | `#2A2A2E` | CTA border, subtle dividers |
+| Accent | `#4f46e5` (indigo) | Category pills, tab bar active |
+| Inactive text | `#888888` | Category chip labels |
+
+- "Swipe up" hint disappears after the first swipe — one-time affordance
+- Category chips: active = white bg + black text; inactive = `#888` on transparent
+- CTA button: dark surface `#1A1A1F` with `1px #2A2A2E` border pill
+- Bottom nav: `#0B0B0F` background, `rgba(255,255,255,0.07)` top border
+- Tab bar active tint: indigo `#4f46e5` on all modes
+
 ## Notable Config
 
 - Splash screen: `#1a1a2e` (dark navy)

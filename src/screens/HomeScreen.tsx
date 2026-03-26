@@ -13,6 +13,7 @@ import { CategoryChips } from '../components/CategoryChips';
 import { GreetingHeader } from '../components/GreetingHeader';
 import { InterstitialAd } from '../components/InterstitialAd';
 import { EmptyState } from '../components/EmptyState';
+import { SearchScreen } from './SearchScreen';
 import { scoreArticle } from '../utils/scoreArticle';
 
 const INTERSTITIAL_INTERVAL = 5;
@@ -23,6 +24,7 @@ export const HomeScreen: React.FC = () => {
   const [hasSwipedOnce, setHasSwipedOnce] = useState(false);
   const swipeCountRef = useRef(0);
   const [showInterstitial, setShowInterstitial] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   const { selectedCategories, userName, prefsLoaded, language } = useSettings();
   const insets = useSafeAreaInsets();
@@ -109,7 +111,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       {/* ── Header ── */}
-      <GreetingHeader userName={userName} />
+      <GreetingHeader userName={userName} onSearchPress={() => setShowSearch(true)} />
       <CategoryChips
         categories={chipCategories}
         selected={activeCategory}
@@ -165,6 +167,12 @@ export const HomeScreen: React.FC = () => {
       </View>
 
       <InterstitialAd visible={showInterstitial} onClose={() => setShowInterstitial(false)} />
+
+      <SearchScreen
+        visible={showSearch}
+        language={language}
+        onClose={() => setShowSearch(false)}
+      />
     </View>
   );
 };

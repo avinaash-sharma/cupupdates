@@ -1,5 +1,5 @@
 import { Article, Category } from '../types';
-import { NEWS_API_KEY, NEWS_API_BASE } from '../constants/config';
+import { NEWS_API_KEY, NEWS_API_BASE, NEWS_SEARCH_BASE } from '../constants/config';
 
 // ── Raw API types ─────────────────────────────────────────────────────────────
 interface RawArticle {
@@ -170,6 +170,62 @@ export async function fetchNews(
     '| categories:', cat ?? 'all',
     data.nextPage ? `| nextPage: ${data.nextPage}` : '',
   );
+
+  return { articles, nextPage: data.nextPage };
+}
+
+/**
+ * Full-text search across all news. language is required.
+ * endpoint: /api/1/news?q=query&language=en
+ */
+export async function searchNews(
+  query: string,
+  language: string,
+  page?: string,
+  signal?: AbortSignal,
+): Promise<FetchNewsResult> {
+  const params = new URLSearchParams({
+    apikey: NEWS_API_KEY,
+    q: query,
+    language,
+    size: '10',
+  });
+
+  if (page) params.set('page', page);
+
+  const url = `${NEWS_SEARCH_BASE}?${params}`;
+
+  if (__DEV__) console.log('[SearchAPI] →', url);
+  const t0 = Date.now();
+
+  let response: Response;
+  try {
+    response = await fetch(url, { signal });
+  } catch (err) {
+    console.error('[SearchAPI] ✗ Network error:', err);
+    throw err;
+  }
+
+  const ms = Date.now() - t0;
+  if (__DEV__) console.log(`[SearchAPI] ← ${response.status} (${ms}ms)`);
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    console.error('[SearchAPI] ✗ Error body:', body);
+    throw new Error(`NewsData search error ${response.status}: ${response.statusText}`);
+  }
+
+  const data: NewsDataResponse = await response.json();
+
+  if (data.status !== 'success') {
+    throw new Error(`NewsData search returned status: ${data.status}`);
+  }
+
+  const articles = deduplicateArticles(
+    data.results.map(transform).filter((a): a is Article => a !== null),
+  );
+
+  if (__DEV__) console.log(`[SearchAPI] ✓ ${articles.length} results for "${query}"`);
 
   return { articles, nextPage: data.nextPage };
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { useTranslation } from '../i18n/useTranslation';
 import { CategorySelector } from '../components/CategorySelector';
 import { Ionicons } from '@expo/vector-icons';
 import { SUPPORTED_LANGUAGES, NOTIFICATION_TIMES } from '../types';
+import { DevToolsScreen } from './DevToolsScreen';
 
 const APP_VERSION = '1.0.0';
 const MIN_CATEGORIES = 3;
@@ -36,6 +37,7 @@ export const SettingsScreen: React.FC = () => {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [keywordInput, setKeywordInput] = useState('');
+  const [showDevTools, setShowDevTools] = useState(false);
 
   const startEditing = () => {
     setNameInput(userName);
@@ -299,13 +301,13 @@ export const SettingsScreen: React.FC = () => {
           <View style={[styles.row, { borderBottomColor: colors.border }]}>
             <View style={styles.rowLeft}>
               <View style={styles.rowIconWrap}>
-                <Ionicons name="cafe-outline" size={18} color={colors.subtext} />
+                <Ionicons name="newspaper-outline" size={18} color={colors.subtext} />
               </View>
-              <Text style={[styles.rowLabel, { color: colors.text }]}>CupUpdates</Text>
+              <Text style={[styles.rowLabel, { color: colors.text }]}>Headline</Text>
             </View>
             <Text style={[styles.rowValue, { color: colors.subtext }]}>{t.settings.appTagline}</Text>
           </View>
-          <View style={[styles.row, { borderBottomColor: 'transparent' }]}>
+          <View style={[styles.row, { borderBottomColor: __DEV__ ? colors.border : 'transparent' }]}>
             <View style={styles.rowLeft}>
               <View style={styles.rowIconWrap}>
                 <Ionicons name="information-circle-outline" size={18} color={colors.subtext} />
@@ -314,8 +316,27 @@ export const SettingsScreen: React.FC = () => {
             </View>
             <Text style={[styles.rowValue, { color: colors.subtext }]}>{APP_VERSION}</Text>
           </View>
+          {__DEV__ && (
+            <TouchableOpacity
+              style={[styles.row, { borderBottomColor: 'transparent' }]}
+              onPress={() => setShowDevTools(true)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.rowLeft}>
+                <View style={styles.rowIconWrap}>
+                  <Ionicons name="bug-outline" size={18} color="#facc15" />
+                </View>
+                <Text style={[styles.rowLabel, { color: '#facc15' }]}>Notification Dev Tools</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="rgba(250,204,21,0.5)" />
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
+
+      {__DEV__ && (
+        <DevToolsScreen visible={showDevTools} onClose={() => setShowDevTools(false)} />
+      )}
     </View>
   );
 };

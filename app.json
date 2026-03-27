@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Headline",
-    "slug": "headline",
+    "slug": "cupupdates",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
@@ -30,8 +30,7 @@
     "android": {
       "package": "com.headlines.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
-        "backgroundColor": "#fce4ec"
+        "backgroundColor": "#1a1a2e"
       },
       "permissions": [
         "android.permission.RECEIVE_BOOT_COMPLETED",

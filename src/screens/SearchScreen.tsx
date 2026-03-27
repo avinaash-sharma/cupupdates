@@ -15,13 +15,14 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as WebBrowser from 'expo-web-browser';
+import { useWebView } from '../context/WebViewContext';
 import { Article } from '../types';
 import { useSearch } from '../hooks/useSearch';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { SwipeDeck } from '../components/SwipeDeck';
 import { NewsCard } from '../components/NewsCard';
 import { timeAgo } from '../utils/timeAgo';
+import { useTranslation } from '../i18n/useTranslation';
 
 interface SearchScreenProps {
   visible: boolean;
@@ -35,9 +36,10 @@ const SearchResultRow: React.FC<{
   isBookmarked: boolean;
   onToggleBookmark: () => void;
 }> = ({ article, isBookmarked, onToggleBookmark }) => {
+  const { openUrl } = useWebView();
   const handlePress = useCallback(() => {
-    if (article.url) WebBrowser.openBrowserAsync(article.url);
-  }, [article.url]);
+    if (article.url) openUrl(article.url);
+  }, [article.url, openUrl]);
 
   return (
     <Pressable
@@ -84,6 +86,8 @@ const SearchResultRow: React.FC<{
 export const SearchScreen: React.FC<SearchScreenProps> = ({ visible, language, onClose }) => {
   const insets = useSafeAreaInsets();
   const inputRef = useRef<TextInput>(null);
+  const t = useTranslation();
+  const { openUrl } = useWebView();
 
   const { query, handleQueryChange, clear, results, isLoading, isLoadingMore, isError, loadMore } =
     useSearch(language);
@@ -162,7 +166,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ visible, language, o
       return (
         <View style={styles.emptyState}>
           <Ionicons name="search-outline" size={40} color="rgba(255,255,255,0.12)" />
-          <Text style={styles.emptyText}>Search for any topic, person, or event</Text>
+          <Text style={styles.emptyText}>{t.search.emptyHint}</Text>
         </View>
       );
     }
@@ -170,14 +174,14 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ visible, language, o
       return (
         <View style={styles.emptyState}>
           <Ionicons name="cloud-offline-outline" size={40} color="rgba(255,255,255,0.12)" />
-          <Text style={styles.emptyText}>Something went wrong. Try again.</Text>
+          <Text style={styles.emptyText}>{t.search.error}</Text>
         </View>
       );
     }
     return (
       <View style={styles.emptyState}>
         <Ionicons name="file-tray-outline" size={40} color="rgba(255,255,255,0.12)" />
-        <Text style={styles.emptyText}>No results for "{query}"</Text>
+        <Text style={styles.emptyText}>{t.search.noResults(query)}</Text>
       </View>
     );
   };
@@ -204,7 +208,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ visible, language, o
             <TextInput
               ref={inputRef}
               style={styles.input}
-              placeholder="Search news…"
+              placeholder={t.search.placeholder}
               placeholderTextColor="rgba(255,255,255,0.3)"
               value={query}
               onChangeText={handleQueryChange}
@@ -235,7 +239,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ visible, language, o
           )}
 
           <Pressable onPress={handleClose} style={styles.cancelBtn}>
-            <Text style={styles.cancelText}>Cancel</Text>
+            <Text style={styles.cancelText}>{t.search.cancel}</Text>
           </Pressable>
         </View>
 
@@ -300,7 +304,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ visible, language, o
                     color="rgba(255,255,255,0.12)"
                   />
                   <Text style={styles.emptyText}>
-                    {isError ? 'Something went wrong.' : query.trim() ? `No results for "${query}"` : 'Search something above'}
+                    {isError ? t.search.error : query.trim() ? t.search.noResults(query) : t.search.emptyHint}
                   </Text>
                 </View>
               )}
@@ -317,10 +321,10 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ visible, language, o
               <Pressable
                 style={({ pressed }) => [styles.readBtn, pressed && styles.readBtnPressed]}
                 onPress={() => {
-                  if (currentArticle?.url) WebBrowser.openBrowserAsync(currentArticle.url);
+                  if (currentArticle?.url) openUrl(currentArticle.url);
                 }}
               >
-                <Text style={styles.readBtnText}>Read Full Story</Text>
+                <Text style={styles.readBtnText}>{t.search.readFullStory}</Text>
                 <Ionicons name="arrow-forward" size={14} color="rgba(255,255,255,0.6)" />
               </Pressable>
             </View>

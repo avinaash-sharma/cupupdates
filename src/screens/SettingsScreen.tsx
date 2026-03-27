@@ -5,33 +5,37 @@ import {
   Switch,
   TouchableOpacity,
   TextInput,
-  StyleSheet,
   Alert,
+  StyleSheet,
   ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettings } from '../hooks/useSettings';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from '../i18n/useTranslation';
 import { CategorySelector } from '../components/CategorySelector';
 import { Ionicons } from '@expo/vector-icons';
-import { SUPPORTED_LANGUAGES } from '../types';
-import { useRestart } from '../context/RestartContext';
+import { SUPPORTED_LANGUAGES, NOTIFICATION_TIMES } from '../types';
 
 const APP_VERSION = '1.0.0';
 const MIN_CATEGORIES = 3;
+const MAX_KEYWORDS = 2;
 
 export const SettingsScreen: React.FC = () => {
   const {
     userName, setUserName,
     isDark, toggleDark,
     selectedCategories, updateCategories,
+    keywords, updateKeywords,
+    notificationHour, updateNotificationHour,
     language, updateLanguage,
   } = useSettings();
+  const t = useTranslation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const restartApp = useRestart();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [keywordInput, setKeywordInput] = useState('');
 
   const startEditing = () => {
     setNameInput(userName);
@@ -41,7 +45,7 @@ export const SettingsScreen: React.FC = () => {
   const handleSaveName = () => {
     const trimmed = nameInput.trim();
     if (!trimmed || trimmed.length < 2) {
-      Alert.alert('Invalid Name', 'Please enter at least 2 characters.');
+      Alert.alert(t.settings.invalidName, t.settings.nameError);
       return;
     }
     setUserName(trimmed);
@@ -55,12 +59,22 @@ export const SettingsScreen: React.FC = () => {
   const handleLanguageChange = async (lang: string) => {
     if (lang === language) return;
     await updateLanguage(lang);
-    Alert.alert(
-      'Language Changed',
-      'The app needs to restart to apply the new language.',
-      [{ text: 'Restart Now', onPress: restartApp }],
-      { cancelable: false },
-    );
+  };
+
+  const handleAddKeyword = () => {
+    const trimmed = keywordInput.trim();
+    if (!trimmed) return;
+    if (keywords.length >= MAX_KEYWORDS) return;
+    if (keywords.includes(trimmed)) {
+      setKeywordInput('');
+      return;
+    }
+    updateKeywords([...keywords, trimmed]);
+    setKeywordInput('');
+  };
+
+  const handleRemoveKeyword = (kw: string) => {
+    updateKeywords(keywords.filter((k) => k !== kw));
   };
 
   return (
@@ -68,13 +82,13 @@ export const SettingsScreen: React.FC = () => {
       <View
         style={[styles.header, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}
       >
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t.settings.title}</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Profile */}
         <View style={[styles.section, { backgroundColor: colors.card }]}>
-          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>PROFILE</Text>
+          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t.settings.profile}</Text>
 
           {editingName ? (
             <View style={[styles.editRow, { borderBottomColor: colors.border }]}>
@@ -85,17 +99,17 @@ export const SettingsScreen: React.FC = () => {
                 style={[styles.nameInput, { color: colors.text, borderColor: colors.border }]}
                 value={nameInput}
                 onChangeText={setNameInput}
-                placeholder="Your name"
+                placeholder={t.settings.namePlaceholder}
                 placeholderTextColor={colors.subtext}
                 autoFocus
                 returnKeyType="done"
                 onSubmitEditing={handleSaveName}
               />
               <TouchableOpacity onPress={handleSaveName} style={styles.saveBtn}>
-                <Text style={styles.saveBtnText}>Save</Text>
+                <Text style={styles.saveBtnText}>{t.settings.save}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setEditingName(false)} style={styles.cancelBtn}>
-                <Text style={[styles.cancelBtnText, { color: colors.subtext }]}>Cancel</Text>
+                <Text style={[styles.cancelBtnText, { color: colors.subtext }]}>{t.settings.cancel}</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -104,11 +118,11 @@ export const SettingsScreen: React.FC = () => {
                 <View style={styles.rowIconWrap}>
                   <Ionicons name="person-outline" size={18} color={colors.subtext} />
                 </View>
-                <Text style={[styles.rowLabel, { color: colors.text }]}>Your Name</Text>
+                <Text style={[styles.rowLabel, { color: colors.text }]}>{t.settings.yourName}</Text>
               </View>
               <TouchableOpacity onPress={startEditing}>
                 <Text style={[styles.rowValue, { color: colors.subtext }]}>
-                  {userName || 'Not set'} <Text style={styles.editLink}>Edit</Text>
+                  {userName || t.settings.notSet} <Text style={styles.editLink}>{t.settings.edit}</Text>
                 </Text>
               </TouchableOpacity>
             </View>
@@ -117,9 +131,9 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Categories */}
         <View style={[styles.section, { backgroundColor: colors.card }]}>
-          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>MY CATEGORIES</Text>
+          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t.settings.categoriesLabel}</Text>
           <Text style={[styles.sectionHint, { color: colors.subtext }]}>
-            Minimum {MIN_CATEGORIES} required · {selectedCategories.length} selected
+            {t.settings.categoriesHint(MIN_CATEGORIES, selectedCategories.length)}
           </Text>
           <View style={styles.categoryPad}>
             <CategorySelector
@@ -130,12 +144,103 @@ export const SettingsScreen: React.FC = () => {
           </View>
         </View>
 
+        {/* Keywords */}
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t.settings.keywordsLabel}</Text>
+          <Text style={[styles.sectionHint, { color: colors.subtext }]}>{t.settings.keywordsHint}</Text>
+
+          <View style={styles.keywordsPad}>
+            {/* Current keywords as removable pills */}
+            {keywords.length === 0 ? (
+              <Text style={[styles.noKeywordsText, { color: colors.subtext }]}>
+                {t.settings.noKeywords}
+              </Text>
+            ) : (
+              <View style={styles.keywordPills}>
+                {keywords.map((kw) => (
+                  <View key={kw} style={[styles.keywordPill, { backgroundColor: isDark ? 'rgba(79,70,229,0.18)' : 'rgba(79,70,229,0.1)' }]}>
+                    <Text style={styles.keywordPillText}>{kw}</Text>
+                    <TouchableOpacity
+                      onPress={() => handleRemoveKeyword(kw)}
+                      hitSlop={8}
+                      style={styles.keywordPillRemove}
+                    >
+                      <Ionicons name="close-circle" size={16} color="#a5b4fc" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Add input — hidden when at max */}
+            {keywords.length < MAX_KEYWORDS && (
+              <View style={[styles.keywordInputRow, { borderColor: colors.border }]}>
+                <TextInput
+                  style={[styles.keywordInput, { color: colors.text }]}
+                  value={keywordInput}
+                  onChangeText={setKeywordInput}
+                  placeholder={t.settings.keywordPlaceholder}
+                  placeholderTextColor={colors.subtext}
+                  returnKeyType="done"
+                  onSubmitEditing={handleAddKeyword}
+                />
+                <TouchableOpacity
+                  style={[styles.keywordAddBtn, !keywordInput.trim() && styles.keywordAddBtnDisabled]}
+                  onPress={handleAddKeyword}
+                  activeOpacity={0.75}
+                >
+                  <Ionicons name="add" size={20} color="#ffffff" />
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {keywords.length >= MAX_KEYWORDS && (
+              <Text style={[styles.maxKeywordsHint, { color: colors.subtext }]}>
+                {t.settings.maxKeywords}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Notifications */}
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t.settings.notificationsLabel}</Text>
+          <View style={styles.notifPad}>
+            <Text style={[styles.notifTimeLabel, { color: colors.text }]}>{t.settings.digestTimeLabel}</Text>
+            <Text style={[styles.sectionHint, { color: colors.subtext, paddingHorizontal: 0, paddingBottom: 12 }]}>
+              {t.settings.digestTimeHint}
+            </Text>
+            <View style={styles.timeGrid}>
+              {NOTIFICATION_TIMES.map((slot) => {
+                const isActive = notificationHour === slot.hour;
+                return (
+                  <TouchableOpacity
+                    key={slot.hour}
+                    style={[
+                      styles.timeSlot,
+                      { borderColor: isActive ? '#4f46e5' : colors.border },
+                      isActive && styles.timeSlotActive,
+                    ]}
+                    onPress={() => updateNotificationHour(slot.hour)}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={[styles.timeSlotLabel, { color: isActive ? '#ffffff' : colors.text }]}>
+                      {slot.label}
+                    </Text>
+                    <Text style={[styles.timeSlotTime, { color: isActive ? 'rgba(255,255,255,0.7)' : colors.subtext }]}>
+                      {slot.time}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+
         {/* Language */}
         <View style={[styles.section, { backgroundColor: colors.card }]}>
-          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>LANGUAGE</Text>
-          <Text style={[styles.sectionHint, { color: colors.subtext }]}>
-            Changing language restarts the app to fetch news in the selected language.
-          </Text>
+          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t.settings.languageLabel}</Text>
+          <Text style={[styles.sectionHint, { color: colors.subtext }]}>{t.settings.languageHint}</Text>
           <View style={styles.languageList}>
             {SUPPORTED_LANGUAGES.map((lang, idx) => {
               const isSelected = language === lang.code;
@@ -171,13 +276,13 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Appearance */}
         <View style={[styles.section, { backgroundColor: colors.card }]}>
-          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>APPEARANCE</Text>
+          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t.settings.appearance}</Text>
           <View style={[styles.row, { borderBottomColor: colors.border }]}>
             <View style={styles.rowLeft}>
               <View style={styles.rowIconWrap}>
                 <Ionicons name="moon-outline" size={18} color={colors.subtext} />
               </View>
-              <Text style={[styles.rowLabel, { color: colors.text }]}>Dark Mode</Text>
+              <Text style={[styles.rowLabel, { color: colors.text }]}>{t.settings.darkMode}</Text>
             </View>
             <Switch
               value={isDark}
@@ -190,7 +295,7 @@ export const SettingsScreen: React.FC = () => {
 
         {/* About */}
         <View style={[styles.section, { backgroundColor: colors.card }]}>
-          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>ABOUT</Text>
+          <Text style={[styles.sectionLabel, { color: colors.subtext }]}>{t.settings.about}</Text>
           <View style={[styles.row, { borderBottomColor: colors.border }]}>
             <View style={styles.rowLeft}>
               <View style={styles.rowIconWrap}>
@@ -198,14 +303,14 @@ export const SettingsScreen: React.FC = () => {
               </View>
               <Text style={[styles.rowLabel, { color: colors.text }]}>CupUpdates</Text>
             </View>
-            <Text style={[styles.rowValue, { color: colors.subtext }]}>Your daily news</Text>
+            <Text style={[styles.rowValue, { color: colors.subtext }]}>{t.settings.appTagline}</Text>
           </View>
           <View style={[styles.row, { borderBottomColor: 'transparent' }]}>
             <View style={styles.rowLeft}>
               <View style={styles.rowIconWrap}>
                 <Ionicons name="information-circle-outline" size={18} color={colors.subtext} />
               </View>
-              <Text style={[styles.rowLabel, { color: colors.text }]}>Version</Text>
+              <Text style={[styles.rowLabel, { color: colors.text }]}>{t.settings.version}</Text>
             </View>
             <Text style={[styles.rowValue, { color: colors.subtext }]}>{APP_VERSION}</Text>
           </View>
@@ -300,5 +405,105 @@ const styles = StyleSheet.create({
   languageNative: {
     fontSize: 12,
     marginTop: 1,
+  },
+
+  // Keywords section
+  keywordsPad: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    gap: 10,
+  },
+  noKeywordsText: {
+    fontSize: 14,
+    opacity: 0.6,
+  },
+  keywordPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  keywordPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 12,
+    paddingRight: 8,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(79,70,229,0.4)',
+    gap: 4,
+  },
+  keywordPillText: {
+    color: '#a5b4fc',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  keywordPillRemove: {
+    paddingLeft: 2,
+  },
+  keywordInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    gap: 0,
+  },
+  keywordInput: {
+    flex: 1,
+    fontSize: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  keywordAddBtn: {
+    backgroundColor: '#4f46e5',
+    width: 42,
+    height: 42,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  keywordAddBtnDisabled: {
+    opacity: 0.4,
+  },
+  maxKeywordsHint: {
+    fontSize: 12,
+    opacity: 0.6,
+  },
+
+  // Notifications / time picker section
+  notifPad: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    paddingTop: 4,
+  },
+  notifTimeLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  timeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  timeSlot: {
+    width: '47%',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    gap: 2,
+  },
+  timeSlotActive: {
+    backgroundColor: '#4f46e5',
+    borderColor: '#4f46e5',
+  },
+  timeSlotLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  timeSlotTime: {
+    fontSize: 12,
   },
 });

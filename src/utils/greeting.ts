@@ -1,17 +1,13 @@
-export const getGreeting = (name: string): string => {
+import { Translations } from '../i18n/translations';
+
+export const getGreeting = (t: Translations, name: string): string => {
   const hour = new Date().getHours();
 
-  let timeOfDay: string;
-  if (hour >= 5 && hour < 12) {
-    timeOfDay = 'Morning';
-  } else if (hour >= 12 && hour < 17) {
-    timeOfDay = 'Afternoon';
-  } else if (hour >= 17 && hour < 21) {
-    timeOfDay = 'Evening';
-  } else {
-    timeOfDay = 'Night';
-  }
+  let time: string;
+  if (hour >= 5 && hour < 12) time = t.greeting.morning;
+  else if (hour >= 12 && hour < 17) time = t.greeting.afternoon;
+  else if (hour >= 17 && hour < 21) time = t.greeting.evening;
+  else time = t.greeting.night;
 
-  const base = `Good ${timeOfDay}`;
-  return name.trim() ? `${base}, ${name.trim()}` : base;
+  return t.greeting.format(time, name.trim() || undefined);
 };

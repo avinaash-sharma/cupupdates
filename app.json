@@ -1,23 +1,43 @@
 {
   "expo": {
-    "name": "CupUpdates",
-    "slug": "cupupdates",
+    "name": "Headline",
+    "slug": "headline",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/logo.png",
     "assetBundlePatterns": ["**/*"],
     "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
       "backgroundColor": "#1a1a2e"
     },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#4f46e5"
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.cupupdates.app"
+      "bundleIdentifier": "com.headline.app",
+      "infoPlist": {
+        "UIBackgroundModes": ["fetch", "remote-notification"]
+      }
     },
     "android": {
-      "package": "com.cupupdates.app",
+      "package": "com.headlines.app",
       "adaptiveIcon": {
-        "backgroundColor": "#1a1a2e"
-      }
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#fce4ec"
+      },
+      "permissions": [
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "extra": {
       "eas": {

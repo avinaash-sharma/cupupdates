@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from '../i18n/useTranslation';
 
 interface EmptyStateProps {
   isError: boolean;
@@ -10,6 +11,7 @@ interface EmptyStateProps {
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ isError, onRetry }) => {
   const { colors } = useTheme();
+  const t = useTranslation();
 
   return (
     <View style={styles.container}>
@@ -20,19 +22,17 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ isError, onRetry }) => {
         style={styles.icon}
       />
       <Text style={[styles.title, { color: colors.text }]}>
-        {isError ? 'Could not load news' : 'No stories found'}
+        {isError ? t.empty.errorTitle : t.empty.noStoriesTitle}
       </Text>
       <Text style={[styles.desc, { color: colors.subtext }]}>
-        {isError
-          ? 'Check your connection or add your NewsData.io API key in src/constants/config.ts'
-          : 'Try a different category'}
+        {isError ? t.empty.errorDesc : t.empty.noStoriesDesc}
       </Text>
       {isError && (
         <Pressable
           style={({ pressed }) => [styles.retryBtn, pressed && styles.retryPressed]}
           onPress={onRetry}
         >
-          <Text style={styles.retryText}>Retry</Text>
+          <Text style={styles.retryText}>{t.empty.retry}</Text>
         </Pressable>
       )}
     </View>

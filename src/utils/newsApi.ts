@@ -229,3 +229,53 @@ export async function searchNews(
 
   return { articles, nextPage: data.nextPage };
 }
+
+/**
+ * Fetch articles for a single keyword, filtered to the last 24 hours.
+ * Used for keyword digest generation — returns [] on any error.
+ */
+export async function searchByKeyword(
+  keyword: string,
+  language = 'en',
+  signal?: AbortSignal,
+): Promise<Article[]> {
+  const params = new URLSearchParams({
+    apikey: NEWS_API_KEY,
+    q: keyword,
+    language,
+    size: '10',
+  });
+
+  const url = `${NEWS_SEARCH_BASE}?${params}`;
+  if (__DEV__) console.log('[KeywordAPI] →', keyword);
+
+  let response: Response;
+  try {
+    response = await fetch(url, { signal });
+  } catch (err) {
+    console.error('[KeywordAPI] ✗ Network error:', err);
+    return [];
+  }
+
+  if (!response.ok) return [];
+
+  let data: NewsDataResponse;
+  try {
+    data = await response.json();
+  } catch {
+    return [];
+  }
+
+  if (data.status !== 'success') return [];
+
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  const articles = deduplicateArticles(
+    data.results
+      .map(transform)
+      .filter((a): a is Article => a !== null)
+      .filter((a) => new Date(a.publishedAt).getTime() >= cutoff),
+  );
+
+  if (__DEV__) console.log(`[KeywordAPI] ✓ ${articles.length} results for "${keyword}" in last 24h`);
+  return articles;
+}

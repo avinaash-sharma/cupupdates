@@ -1,7 +1,8 @@
 import React from 'react';
 import { ScrollView, Pressable, Text, StyleSheet } from 'react-native';
-import { Category } from '../types';
+import { Category, TRENDING_CATEGORY, DEFAULT_CATEGORY } from '../types';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from '../i18n/useTranslation';
 
 interface CategoryChipsProps {
   categories: Category[];
@@ -15,6 +16,13 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
   onSelect,
 }) => {
   const { colors } = useTheme();
+  const t = useTranslation();
+
+  const displayLabel = (cat: string) => {
+    if (cat === TRENDING_CATEGORY) return t.home.trending;
+    if (cat === DEFAULT_CATEGORY) return t.home.all;
+    return cat;
+  };
 
   return (
     <ScrollView
@@ -36,7 +44,7 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
             ]}
           >
             <Text style={[styles.chipText, active ? styles.chipTextActive : styles.chipTextInactive]}>
-              {cat}
+              {displayLabel(cat)}
             </Text>
           </Pressable>
         );

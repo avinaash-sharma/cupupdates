@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
+import { useWebView } from '../context/WebViewContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,14 +17,17 @@ import { getBookmarks, saveBookmarks } from '../utils/storage';
 import { Article } from '../types';
 import { SwipeDeck } from '../components/SwipeDeck';
 import { NewsCard } from '../components/NewsCard';
+import { useTranslation } from '../i18n/useTranslation';
 
 export const BookmarksScreen: React.FC = () => {
   const [bookmarks, setBookmarks] = useState<Article[]>([]);
   const [viewMode, setViewMode]   = useState<'list' | 'card'>('list');
   const [currentIndex, setCurrentIndex] = useState(0);
   const prevIndexRef = useRef(-1);
+  const t = useTranslation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { openUrl } = useWebView();
 
   // Reload every time the tab is focused
   useFocusEffect(
@@ -97,9 +100,9 @@ export const BookmarksScreen: React.FC = () => {
         </Text>
         <TouchableOpacity
           style={styles.readMoreRow}
-          onPress={() => WebBrowser.openBrowserAsync(item.url)}
+          onPress={() => openUrl(item.url)}
         >
-          <Text style={styles.readMore}>Read More</Text>
+          <Text style={styles.readMore}>{t.bookmarks.readMore}</Text>
           <Ionicons name="arrow-forward" size={13} color="#4f46e5" />
         </TouchableOpacity>
       </View>
@@ -114,8 +117,8 @@ export const BookmarksScreen: React.FC = () => {
       {/* ── Header ── */}
       <View style={[styles.header, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
         <View>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Bookmarks</Text>
-          <Text style={[styles.headerCount, { color: colors.subtext }]}>{bookmarks.length} saved</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>{t.bookmarks.title}</Text>
+          <Text style={[styles.headerCount, { color: colors.subtext }]}>{t.bookmarks.saved(bookmarks.length)}</Text>
         </View>
 
         {bookmarks.length > 0 && (
@@ -137,10 +140,8 @@ export const BookmarksScreen: React.FC = () => {
       {bookmarks.length === 0 && (
         <View style={styles.empty}>
           <Ionicons name="bookmark-outline" size={56} color="rgba(255,255,255,0.18)" style={styles.emptyIcon} />
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>No bookmarks yet</Text>
-          <Text style={[styles.emptyDesc, { color: colors.subtext }]}>
-            Tap the heart icon on any article to save it here.
-          </Text>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>{t.bookmarks.emptyTitle}</Text>
+          <Text style={[styles.emptyDesc, { color: colors.subtext }]}>{t.bookmarks.emptyDesc}</Text>
         </View>
       )}
 
@@ -181,10 +182,10 @@ export const BookmarksScreen: React.FC = () => {
             <Pressable
               style={({ pressed }) => [styles.readBtn, pressed && styles.readBtnPressed]}
               onPress={() => {
-                if (currentArticle?.url) WebBrowser.openBrowserAsync(currentArticle.url);
+                if (currentArticle?.url) openUrl(currentArticle.url);
               }}
             >
-              <Text style={styles.readBtnText}>Read Full Story</Text>
+              <Text style={styles.readBtnText}>{t.bookmarks.readFullStory}</Text>
               <Ionicons name="arrow-forward" size={14} color="rgba(255,255,255,0.6)" />
             </Pressable>
           </View>

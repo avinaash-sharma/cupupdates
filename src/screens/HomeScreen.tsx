@@ -1,12 +1,13 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as WebBrowser from 'expo-web-browser';
+import { useWebView } from '../context/WebViewContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Article, DEFAULT_CATEGORY, TRENDING_CATEGORY } from '../types';
 import { useNews } from '../hooks/useNews';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useSettings } from '../hooks/useSettings';
+import { useNotifications } from '../hooks/useNotifications';
 import { SwipeDeck } from '../components/SwipeDeck';
 import { NewsCard } from '../components/NewsCard';
 import { CategoryChips } from '../components/CategoryChips';
@@ -14,7 +15,9 @@ import { GreetingHeader } from '../components/GreetingHeader';
 import { InterstitialAd } from '../components/InterstitialAd';
 import { EmptyState } from '../components/EmptyState';
 import { SearchScreen } from './SearchScreen';
+import { NotificationHistoryScreen } from './NotificationHistoryScreen';
 import { scoreArticle } from '../utils/scoreArticle';
+import { useTranslation } from '../i18n/useTranslation';
 
 const INTERSTITIAL_INTERVAL = 5;
 
@@ -25,9 +28,20 @@ export const HomeScreen: React.FC = () => {
   const swipeCountRef = useRef(0);
   const [showInterstitial, setShowInterstitial] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const t = useTranslation();
 
   const { selectedCategories, userName, prefsLoaded, language } = useSettings();
+  const { history, unreadCount, checkOnOpen, markRead } = useNotifications();
+  const { openUrl } = useWebView();
   const insets = useSafeAreaInsets();
+
+  // On-open keyword digest check
+  useEffect(() => {
+    if (prefsLoaded) {
+      checkOnOpen();
+    }
+  }, [prefsLoaded, checkOnOpen]);
 
   // ── Per-category fetch: specific tab → fetch only that; All → fetch all selected ──
   const categoriesToFetch = useMemo(() => {
@@ -111,7 +125,12 @@ export const HomeScreen: React.FC = () => {
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       {/* ── Header ── */}
-      <GreetingHeader userName={userName} onSearchPress={() => setShowSearch(true)} />
+      <GreetingHeader
+        userName={userName}
+        onSearchPress={() => setShowSearch(true)}
+        onBellPress={() => setShowNotifications(true)}
+        unreadCount={unreadCount}
+      />
       <CategoryChips
         categories={chipCategories}
         selected={activeCategory}
@@ -148,7 +167,7 @@ export const HomeScreen: React.FC = () => {
       <View style={[styles.bottomControls, { paddingBottom: insets.bottom + 8 }]}>
         <View style={[styles.swipeHint, hasSwipedOnce && styles.swipeHintHidden]}>
           <Ionicons name="arrow-up" size={16} color="rgba(255,255,255,0.3)" />
-          <Text style={styles.swipeLabel}>SWIPE UP</Text>
+          <Text style={styles.swipeLabel}>{t.home.swipeUp}</Text>
         </View>
 
         {showDeck && (
@@ -159,9 +178,9 @@ export const HomeScreen: React.FC = () => {
 
         <Pressable
           style={({ pressed }) => [styles.readBtn, pressed && styles.readBtnPressed]}
-          onPress={() => { if (currentArticle?.url) WebBrowser.openBrowserAsync(currentArticle.url); }}
+          onPress={() => { if (currentArticle?.url) openUrl(currentArticle.url); }}
         >
-          <Text style={styles.readBtnText}>Read Full Story</Text>
+          <Text style={styles.readBtnText}>{t.home.readFullStory}</Text>
           <Ionicons name="arrow-forward" size={14} color="rgba(255,255,255,0.6)" />
         </Pressable>
       </View>
@@ -172,6 +191,13 @@ export const HomeScreen: React.FC = () => {
         visible={showSearch}
         language={language}
         onClose={() => setShowSearch(false)}
+      />
+
+      <NotificationHistoryScreen
+        visible={showNotifications}
+        history={history}
+        onClose={() => setShowNotifications(false)}
+        onMarkRead={markRead}
       />
     </View>
   );

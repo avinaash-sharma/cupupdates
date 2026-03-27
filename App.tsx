@@ -8,12 +8,17 @@ import { StatusBar } from 'expo-status-bar';
 
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { LanguageProvider } from './src/context/LanguageContext';
+import { WebViewProvider } from './src/context/WebViewContext';
+import { WebViewModal } from './src/components/WebViewModal';
+import { useTranslation } from './src/i18n/useTranslation';
 import { RestartContext } from './src/context/RestartContext';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { BookmarksScreen } from './src/screens/BookmarksScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { getUserPreferences } from './src/utils/storage';
+import { registerBackgroundTask } from './src/tasks/keywordBackgroundTask';
 
 const Tab = createBottomTabNavigator();
 
@@ -23,6 +28,7 @@ const ICON_SIZE = 24;
 
 const MainTabs: React.FC = () => {
   const { colors, isDark } = useTheme();
+  const t = useTranslation();
 
   const activeColor   = '#4f46e5';
   const inactiveColor = isDark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.35)';
@@ -47,6 +53,7 @@ const MainTabs: React.FC = () => {
         name="Home"
         component={HomeScreen}
         options={{
+          tabBarLabel: t.tabs.home,
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name={focused ? 'home' : 'home-outline'}
@@ -60,6 +67,7 @@ const MainTabs: React.FC = () => {
         name="Bookmarks"
         component={BookmarksScreen}
         options={{
+          tabBarLabel: t.tabs.bookmarks,
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name={focused ? 'bookmark' : 'bookmark-outline'}
@@ -73,6 +81,7 @@ const MainTabs: React.FC = () => {
         name="Settings"
         component={SettingsScreen}
         options={{
+          tabBarLabel: t.tabs.settings,
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name={focused ? 'settings' : 'settings-outline'}
@@ -93,6 +102,8 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     getUserPreferences().then((prefs) => setHasOnboarded(prefs?.hasOnboarded ?? false));
+    // Register background fetch task after the JS runtime is ready
+    registerBackgroundTask();
   }, []);
 
   if (hasOnboarded === null) return null;
@@ -123,7 +134,15 @@ export default function App() {
       <GestureHandlerRootView key={appKey} style={{ flex: 1 }}>
         <SafeAreaProvider>
           <ThemeProvider>
-            <AppContent />
+            <LanguageProvider>
+              <WebViewProvider
+                renderModal={(state, close) => (
+                  <WebViewModal url={state.url} visible={state.visible} onClose={close} />
+                )}
+              >
+                <AppContent />
+              </WebViewProvider>
+            </LanguageProvider>
           </ThemeProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>

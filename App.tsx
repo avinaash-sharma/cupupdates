@@ -1,7 +1,8 @@
 import 'react-native-gesture-handler'; // must be first import
-import React, { useState, useEffect, useCallback } from 'react';
-import { NavigationContainer, DarkTheme } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { NavigationContainer, DarkTheme, createNavigationContainerRef } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import * as Notifications from 'expo-notifications';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -20,7 +21,14 @@ import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { getUserPreferences } from './src/utils/storage';
 import { registerBackgroundTask } from './src/tasks/keywordBackgroundTask';
 
-const Tab = createBottomTabNavigator();
+type RootTabParamList = {
+  Home: { openNotifications?: boolean } | undefined;
+  Bookmarks: undefined;
+  Settings: undefined;
+};
+
+const Tab = createBottomTabNavigator<RootTabParamList>();
+const navigationRef = createNavigationContainerRef<RootTabParamList>();
 
 // RestartContext is defined in src/context/RestartContext.ts to avoid circular deps.
 
@@ -99,11 +107,30 @@ const AppContent: React.FC = () => {
   // null = still reading storage, false = needs onboarding, true = ready
   const [hasOnboarded, setHasOnboarded] = useState<boolean | null>(null);
   const { isDark } = useTheme();
+  const pendingOpenNotif = useRef(false);
 
   useEffect(() => {
     getUserPreferences().then((prefs) => setHasOnboarded(prefs?.hasOnboarded ?? false));
-    // Register background fetch task after the JS runtime is ready
     registerBackgroundTask();
+
+    // Cold-start: app was killed and user tapped a notification to open it
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response?.notification.request.content.data?.type === 'keyword_digest') {
+        pendingOpenNotif.current = true;
+      }
+    });
+
+    // Foreground / background-to-foreground: notification tapped while app was alive
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      if (response.notification.request.content.data?.type === 'keyword_digest') {
+        if (navigationRef.isReady()) {
+          navigationRef.navigate('Home', { openNotifications: true });
+        } else {
+          pendingOpenNotif.current = true;
+        }
+      }
+    });
+    return () => sub.remove();
   }, []);
 
   if (hasOnboarded === null) return null;
@@ -118,7 +145,16 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <NavigationContainer theme={DarkTheme}>
+    <NavigationContainer
+      ref={navigationRef}
+      theme={DarkTheme}
+      onReady={() => {
+        if (pendingOpenNotif.current) {
+          pendingOpenNotif.current = false;
+          navigationRef.navigate('Home', { openNotifications: true });
+        }
+      }}
+    >
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <MainTabs />
     </NavigationContainer>

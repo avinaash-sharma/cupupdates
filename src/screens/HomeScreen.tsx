@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
 import { useWebView } from '../context/WebViewContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Article, DEFAULT_CATEGORY, TRENDING_CATEGORY } from '../types';
@@ -21,6 +23,8 @@ import { useTranslation } from '../i18n/useTranslation';
 
 const INTERSTITIAL_INTERVAL = 5;
 
+type HomeRouteProp = RouteProp<{ Home: { openNotifications?: boolean } }, 'Home'>;
+
 export const HomeScreen: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>(TRENDING_CATEGORY);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -30,6 +34,8 @@ export const HomeScreen: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const t = useTranslation();
+  const route = useRoute<HomeRouteProp>();
+  const navigation = useNavigation();
 
   const { selectedCategories, userName, prefsLoaded, language } = useSettings();
   const { history, unreadCount, checkOnOpen, markRead } = useNotifications();
@@ -42,6 +48,14 @@ export const HomeScreen: React.FC = () => {
       checkOnOpen();
     }
   }, [prefsLoaded, checkOnOpen]);
+
+  // Open notification history when app was launched via a notification tap
+  useEffect(() => {
+    if (route.params?.openNotifications) {
+      setShowNotifications(true);
+      navigation.setParams({ openNotifications: undefined } as never);
+    }
+  }, [route.params?.openNotifications]);
 
   // ── Per-category fetch: specific tab → fetch only that; All → fetch all selected ──
   const categoriesToFetch = useMemo(() => {

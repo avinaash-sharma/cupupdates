@@ -17,7 +17,7 @@ import { saveUserPreferences } from '../utils/storage';
 import { CategorySelector } from '../components/CategorySelector';
 import { SUPPORTED_LANGUAGES, NOTIFICATION_TIMES, DEFAULT_NOTIFICATION_HOUR } from '../types';
 
-const MIN_CATEGORIES = 5;
+const MIN_CATEGORIES = 3;
 const MAX_KEYWORDS = 2;
 
 const PRESET_KEYWORDS = [
@@ -173,6 +173,10 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   if (step === 2) {
     return (
       <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.gradient}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => setStep(1)} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={22} color="rgba(255,255,255,0.7)" />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
         <View style={styles.inner}>
           <StepIndicator />
 
@@ -233,6 +237,10 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
   return (
     <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.gradient}>
+      <TouchableOpacity style={styles.backBtn} onPress={() => setStep(2)} activeOpacity={0.7}>
+        <Ionicons name="chevron-back" size={22} color="rgba(255,255,255,0.7)" />
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -480,6 +488,22 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
+  backBtn: {
+    position: 'absolute',
+    top: 56,
+    left: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    zIndex: 10,
+    paddingVertical: 8,
+    paddingRight: 12,
+  },
+  backText: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 16,
+    fontWeight: '500',
+  },
   inner: {
     flexGrow: 1,
     justifyContent: 'space-between',
@@ -488,7 +512,7 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
   logoSection: { alignItems: 'center' },
-  logoImage: { width: 100, height: 100, marginBottom: 16 },
+  logoImage: { width: 100, height: 100, marginBottom: 16, borderRadius: 100},
   logoName: { fontSize: 32, fontWeight: '800', color: '#ffffff', letterSpacing: 0.5, marginBottom: 8 },
   tagline: { fontSize: 16, color: 'rgba(255,255,255,0.62)' },
   steps: {

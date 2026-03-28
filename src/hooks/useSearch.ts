@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { searchNews } from '../utils/newsApi';
 import { Article } from '../types';
+import { posthog } from '../posthog';
 
 export const useSearch = (language: string) => {
   const [query, setQuery]               = useState('');
@@ -36,6 +37,7 @@ export const useSearch = (language: string) => {
       );
       setResults(articles);
       nextPageRef.current = nextPage;
+      posthog.capture('search_performed', { query: q.trim(), results_count: articles.length });
     } catch (err: any) {
       if (err?.name !== 'AbortError') setIsError(true);
     } finally {

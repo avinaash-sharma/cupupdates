@@ -20,6 +20,8 @@ import { SettingsScreen } from './src/screens/SettingsScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { getUserPreferences } from './src/utils/storage';
 import { registerBackgroundTask } from './src/tasks/keywordBackgroundTask';
+import { PostHogProvider } from 'posthog-react-native';
+import { posthog } from './src/posthog';
 
 type RootTabParamList = {
   Home: { openNotifications?: boolean } | undefined;
@@ -155,8 +157,10 @@ const AppContent: React.FC = () => {
         }
       }}
     >
-      <StatusBar style={isDark ? 'light' : 'dark'} />
-      <MainTabs />
+      <PostHogProvider client={posthog}>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <MainTabs />
+      </PostHogProvider>
     </NavigationContainer>
   );
 };

@@ -16,6 +16,7 @@ import * as Notifications from 'expo-notifications';
 import { saveUserPreferences } from '../utils/storage';
 import { CategorySelector } from '../components/CategorySelector';
 import { SUPPORTED_LANGUAGES, NOTIFICATION_TIMES, DEFAULT_NOTIFICATION_HOUR } from '../types';
+import { posthog } from '../posthog';
 
 const MIN_CATEGORIES = 3;
 const MAX_KEYWORDS = 2;
@@ -58,14 +59,22 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const handleCategoriesContinue = async () => {
     if (selectedCategories.length < MIN_CATEGORIES) return;
     if (selectedKeywords.length === 0) return;
+    const trimmedName = name.trim();
     await saveUserPreferences({
-      name: name.trim(),
+      name: trimmedName,
       selectedCategories,
       hasOnboarded: true,
       language: selectedLanguage,
       keywords: selectedKeywords,
       lastKeywordCheck: 0, // force first digest fetch on next open
       notificationHour,
+    });
+    posthog.identify(trimmedName, { name: trimmedName });
+    posthog.capture('onboarding_completed', {
+      language: selectedLanguage,
+      categories_count: selectedCategories.length,
+      keywords_count: selectedKeywords.length,
+      notification_granted: notifGranted === true,
     });
     onComplete();
   };
@@ -93,7 +102,13 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
   const requestNotifPermission = async () => {
     const { status } = await Notifications.requestPermissionsAsync();
-    setNotifGranted(status === 'granted');
+    const granted = status === 'granted';
+    setNotifGranted(granted);
+    if (granted) {
+      posthog.capture('notification_permission_granted');
+    } else {
+      posthog.capture('notification_permission_denied');
+    }
   };
 
   const StepIndicator = () => (

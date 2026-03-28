@@ -17,6 +17,7 @@ import { CategorySelector } from '../components/CategorySelector';
 import { Ionicons } from '@expo/vector-icons';
 import { SUPPORTED_LANGUAGES, NOTIFICATION_TIMES } from '../types';
 import { DevToolsScreen } from './DevToolsScreen';
+import { posthog } from '../posthog';
 
 const APP_VERSION = '1.0.0';
 const MIN_CATEGORIES = 3;
@@ -61,6 +62,7 @@ export const SettingsScreen: React.FC = () => {
   const handleLanguageChange = async (lang: string) => {
     if (lang === language) return;
     await updateLanguage(lang);
+    posthog.capture('settings_language_changed', { language: lang });
   };
 
   const handleAddKeyword = () => {
@@ -73,10 +75,12 @@ export const SettingsScreen: React.FC = () => {
     }
     updateKeywords([...keywords, trimmed]);
     setKeywordInput('');
+    posthog.capture('settings_keyword_added', { keyword: trimmed });
   };
 
   const handleRemoveKeyword = (kw: string) => {
     updateKeywords(keywords.filter((k) => k !== kw));
+    posthog.capture('settings_keyword_removed', { keyword: kw });
   };
 
   return (
@@ -288,7 +292,7 @@ export const SettingsScreen: React.FC = () => {
             </View>
             <Switch
               value={isDark}
-              onValueChange={toggleDark}
+              onValueChange={(val) => { toggleDark(); posthog.capture('settings_dark_mode_toggled', { dark_mode: val }); }}
               trackColor={{ false: '#e0e0e0', true: '#4f46e5' }}
               thumbColor="#ffffff"
             />

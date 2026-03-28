@@ -20,6 +20,7 @@ import { SearchScreen } from './SearchScreen';
 import { NotificationHistoryScreen } from './NotificationHistoryScreen';
 import { scoreArticle } from '../utils/scoreArticle';
 import { useTranslation } from '../i18n/useTranslation';
+import { posthog } from '../posthog';
 
 const INTERSTITIAL_INTERVAL = 5;
 
@@ -78,6 +79,7 @@ export const HomeScreen: React.FC = () => {
   const handleCategoryChange = useCallback((cat: string) => {
     setActiveCategory(cat);
     setCurrentIndex(0);
+    posthog.capture('category_selected', { category: cat });
   }, []);
 
   const handleSwipe = useCallback(() => {
@@ -99,6 +101,14 @@ export const HomeScreen: React.FC = () => {
     if (!hasSwipedOnce) setHasSwipedOnce(true);
     swipeCountRef.current += 1;
     if (swipeCountRef.current % INTERSTITIAL_INTERVAL === 0) setShowInterstitial(true);
+    const swiped = articles[swipeCountRef.current - 1];
+    if (swiped) {
+      posthog.capture('article_swiped', {
+        category: swiped.category,
+        source: swiped.source,
+        swipe_count: swipeCountRef.current,
+      });
+    }
   }, [articles, selectedCategories, hasSwipedOnce]);
 
   const handleSwipeBack = useCallback(() => {
@@ -192,7 +202,16 @@ export const HomeScreen: React.FC = () => {
 
         <Pressable
           style={({ pressed }) => [styles.readBtn, pressed && styles.readBtnPressed]}
-          onPress={() => { if (currentArticle?.url) openUrl(currentArticle.url); }}
+          onPress={() => {
+            if (currentArticle?.url) {
+              openUrl(currentArticle.url);
+              posthog.capture('article_read', {
+                category: currentArticle.category,
+                source: currentArticle.source,
+                screen: 'home',
+              });
+            }
+          }}
         >
           <Text style={styles.readBtnText}>{t.home.readFullStory}</Text>
           <Ionicons name="arrow-forward" size={14} color="rgba(255,255,255,0.6)" />

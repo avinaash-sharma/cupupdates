@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Article } from '../types';
 import { getBookmarks, saveBookmarks } from '../utils/storage';
+import { posthog } from '../posthog';
 
 export const useBookmarks = () => {
   const [bookmarks, setBookmarks] = useState<Article[]>([]);
@@ -21,6 +22,10 @@ export const useBookmarks = () => {
         ? prev.filter((b) => b.id !== article.id)
         : [article, ...prev];
       saveBookmarks(next);
+      posthog.capture(exists ? 'article_unbookmarked' : 'article_bookmarked', {
+        category: article.category,
+        source: article.source,
+      });
       return next;
     });
   }, []);

@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Article } from '../types';
 import { ShimmerBackground } from './ShimmerBackground';
 import { timeAgo } from '../utils/timeAgo';
+import { posthog } from '../posthog';
 
 interface NewsCardProps {
   article: Article;
@@ -42,10 +43,14 @@ const NewsCardInner: React.FC<NewsCardProps> = ({
         message: Platform.OS === 'ios' ? article.title : `${article.title}\n\n${article.url}`,
         url: article.url, // iOS only
       });
+      posthog.capture('article_shared', {
+        category: article.category,
+        source: article.source,
+      });
     } catch {
       // user dismissed or share unavailable — silent fail
     }
-  }, [article.title, article.url]);
+  }, [article.title, article.url, article.category, article.source]);
 
   return (
     <View style={StyleSheet.absoluteFill}>
